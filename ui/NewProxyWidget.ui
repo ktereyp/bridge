@@ -1,0 +1,741 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>NewProxyWidget</class>
+ <widget class="QWidget" name="NewProxyWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>549</width>
+    <height>652</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>NewProxyWidget</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QFormLayout" name="formLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label">
+       <property name="minimumSize">
+        <size>
+         <width>60</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>50</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>name</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="nameInput"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="minimumSize">
+        <size>
+         <width>60</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>50</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>type</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="proxyTypeInput">
+       <item>
+        <property name="text">
+         <string comment="Trojan">Trojan</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string comment="ShadowSocks">ShadowSocks</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Vmess</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Socks5</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Http</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Snell</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>ShadowSocksR</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="lastRelayLabel">
+       <property name="minimumSize">
+        <size>
+         <width>60</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>60</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>last relay</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QCheckBox" name="lastRelayInput">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QStackedWidget" name="stackedWidget">
+     <widget class="QWidget" name="pageTrojan">
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <layout class="QFormLayout" name="formLayout_3">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="minimumSize">
+            <size>
+             <width>60</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>50</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>server</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="trojanServerInput"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_4">
+           <property name="minimumSize">
+            <size>
+             <width>60</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>100</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>port</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="trojanPortInput"/>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_6">
+           <property name="minimumSize">
+            <size>
+             <width>60</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>100</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>password</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="trojanPasswordInput"/>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_15">
+           <property name="text">
+            <string>udp</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QCheckBox" name="trojanUdpInput">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="label_5">
+           <property name="minimumSize">
+            <size>
+             <width>60</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>100</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>sni</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QLineEdit" name="trojanSniInput"/>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="label_11">
+           <property name="text">
+            <string>skip-cert-verify</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QCheckBox" name="trojanSkipCertVerifyInput">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="0">
+          <widget class="QLabel" name="label_16">
+           <property name="text">
+            <string>alpn</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="1">
+          <widget class="QLineEdit" name="trojanAlpnInput"/>
+         </item>
+         <item row="7" column="0">
+          <widget class="QLabel" name="label_17">
+           <property name="text">
+            <string>network</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="1">
+          <widget class="QComboBox" name="trojanNetworkInput">
+           <item>
+            <property name="text">
+             <string>default</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>grpc</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>ws</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="8" column="1">
+          <widget class="QStackedWidget" name="trojanNetwrokStackedWidget">
+           <widget class="QWidget" name="pageTrojanNetworkDefault"/>
+           <widget class="QWidget" name="pageTrojanNetworkGrpc">
+            <layout class="QHBoxLayout" name="horizontalLayout_5">
+             <item>
+              <layout class="QFormLayout" name="formLayout_2">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_7">
+                 <property name="text">
+                  <string>grpc-service-name</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="trojanGrpcServiceNameInput"/>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="pageTrojanNetworkWebsockets">
+            <layout class="QHBoxLayout" name="horizontalLayout_6">
+             <item>
+              <layout class="QFormLayout" name="formLayout_12">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_8">
+                 <property name="text">
+                  <string>path</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_9">
+                 <property name="text">
+                  <string>headers</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="trojanWebsocketsPathInput"/>
+               </item>
+               <item row="1" column="1">
+                <widget class="QLineEdit" name="trojanWebSocketsHeadersInput"/>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="pageShadowSocks">
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <layout class="QFormLayout" name="formLayout_4">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_18">
+           <property name="text">
+            <string>server</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_19">
+           <property name="text">
+            <string>port</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_20">
+           <property name="text">
+            <string>password</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="shadowSocksServerInput"/>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="shadowSocksPortInput"/>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="shadowSocksPasswordInput"/>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_21">
+           <property name="text">
+            <string>cipher</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QComboBox" name="shadowSocksCihperInput">
+           <item>
+            <property name="text">
+             <string>aes-128-gcm</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>aes-192-gcm</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>aes-256-gcm</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>aes-128-cfb</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>aes-192-cfb</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>aes-256-cfb</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>aes-128-ctr</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>aes-192-ctr</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>aes-256-ctr</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>rc4-md5</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>chacha20-ietf</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>xchacha20</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>chacha20-ietf-poly1305</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>xchacha20-ietf-poly1305</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="label_22">
+           <property name="text">
+            <string>udp</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QCheckBox" name="shadowSocksUdpInput">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="label_23">
+           <property name="text">
+            <string>plugin</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QComboBox" name="shadowSocksPluginInput">
+           <item>
+            <property name="text">
+             <string>default</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>obfs</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>v2ray-plugin</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="6" column="1">
+          <widget class="QStackedWidget" name="shadowSocksPluginOptWidget">
+           <widget class="QWidget" name="pageShadowSocksDefault"/>
+           <widget class="QWidget" name="pageShadowSocksObfs">
+            <layout class="QHBoxLayout" name="horizontalLayout">
+             <item>
+              <layout class="QFormLayout" name="formLayout_10">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_24">
+                 <property name="text">
+                  <string>mode</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QComboBox" name="shadowSocksObfsModeInput">
+                 <item>
+                  <property name="text">
+                   <string>tls</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>http</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_10">
+                 <property name="text">
+                  <string>host</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QLineEdit" name="shadowSocksObfsHostInput"/>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="pageShadowSocksV2ray">
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <item>
+              <layout class="QFormLayout" name="formLayout_11">
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_25">
+                 <property name="text">
+                  <string>mode</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QComboBox" name="shadowSocksV2rayPluginModeInput">
+                 <item>
+                  <property name="text">
+                   <string>websocket</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_26">
+                 <property name="text">
+                  <string>TLS</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QCheckBox" name="shadowSocksV2rayPluginTlsInput">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_27">
+                 <property name="text">
+                  <string>skip-cert-verify</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QCheckBox" name="shadowSocksV2rayPluginSkipCertVerifyInput">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QLabel" name="label_28">
+                 <property name="text">
+                  <string>host</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="1">
+                <widget class="QLineEdit" name="shadowSocksV2rayPluginHostInput"/>
+               </item>
+               <item row="4" column="0">
+                <widget class="QLabel" name="label_29">
+                 <property name="text">
+                  <string>path</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="0">
+                <widget class="QLabel" name="label_30">
+                 <property name="text">
+                  <string>mux</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="0">
+                <widget class="QLabel" name="label_31">
+                 <property name="text">
+                  <string>headers</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="1">
+                <widget class="QLineEdit" name="shadowSocksV2rayPluginPathInput"/>
+               </item>
+               <item row="5" column="1">
+                <widget class="QCheckBox" name="shadowSocksV2rayPluginMuxInput">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="1">
+                <widget class="QLineEdit" name="shadowSocksV2rayPluginHeadersInput"/>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="pageShadowSocksR">
+      <layout class="QHBoxLayout" name="horizontalLayout_13">
+       <item>
+        <layout class="QFormLayout" name="formLayout_5"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="pageVmess">
+      <layout class="QHBoxLayout" name="horizontalLayout_8">
+       <item>
+        <layout class="QFormLayout" name="formLayout_6"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="pageHttp">
+      <layout class="QHBoxLayout" name="horizontalLayout_9">
+       <item>
+        <layout class="QFormLayout" name="formLayout_7"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="pageSocks5">
+      <layout class="QHBoxLayout" name="horizontalLayout_10">
+       <item>
+        <layout class="QFormLayout" name="formLayout_8"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="pageSnell">
+      <layout class="QHBoxLayout" name="horizontalLayout_11">
+       <item>
+        <layout class="QFormLayout" name="formLayout_9"/>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_7">
+     <item>
+      <spacer name="horizontalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="saveBtn">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Save</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
