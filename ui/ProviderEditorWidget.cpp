@@ -2,6 +2,7 @@
 #include "ui_ProviderEditorWidget.h"
 #include "../utils/Config.h"
 #include "../proxy/Provider.h"
+#include <QMessageBox>
 
 ProviderEditorWidget::ProviderEditorWidget(QWidget *parent) :
         QWidget(parent), ui(new Ui::ProviderEditorWidget) {
@@ -20,6 +21,12 @@ void ProviderEditorWidget::save() {
     if (proxyType == "Trojan") {
         this->providerData.proxyType = ProxyType::Trojan;
     }
+    auto updatePeriod = ui->updatePeriodInput->value();
+    if (updatePeriod <= 0) {
+        QMessageBox::warning(this, "Invalid parameter", "update period is not valid");
+        return;
+    }
+    this->providerData.updatePeriod = updatePeriod;
     Config::setProvider(this->providerData);
 
     close();
@@ -32,4 +39,5 @@ void ProviderEditorWidget::setProvider(const ProviderData &provider) {
     if (provider.proxyType == ProxyType::Trojan) {
         ui->proxyTypeInput->setCurrentText("Trojan");
     }
+    ui->updatePeriodInput->setValue(this->providerData.updatePeriod);
 }

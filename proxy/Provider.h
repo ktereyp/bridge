@@ -6,6 +6,7 @@
 #include <utility>
 #include "Proxy.h"
 #include "../utils/Config.h"
+#include <QTimer>
 
 enum EncodeType {
     PlainText,
@@ -15,9 +16,7 @@ enum EncodeType {
 class Provider : public QObject {
 Q_OBJECT
 public:
-    explicit Provider(ProviderData data) :
-            providerData(std::move(data)) {
-    }
+    explicit Provider(ProviderData data, QObject *parent = nullptr);
 
     void fetchProxyList(bool loadFromNetwork = false);
 
@@ -36,10 +35,13 @@ private:
     void processData(const QString &);
 
     void storeData(const QString &);
-
+private slots:
+    void updateProxy();
 private:
+    QTimer timer;
     ProviderData providerData;
     qlonglong lastTime{};
+
 };
 
 

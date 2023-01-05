@@ -9,6 +9,7 @@ public:
     QString uuid;
     QString name;
     QString url;
+    double updatePeriod = 0.5;
     ProxyType proxyType = {};
     QString encodeType;
 };

@@ -5,6 +5,23 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
+Provider::Provider(ProviderData data, QObject *parent) :
+        QObject(parent),
+        providerData(std::move(data)),
+        timer(this) {
+
+    // update period, at least 10 minutes
+    qDebug() << "update period of provider " << providerData.name
+             << ": " << providerData.updatePeriod << " days";
+    auto period = (long) (providerData.updatePeriod * 3600 * 24);
+    if (period < 60 * 10) {
+        period = 60 * 10;
+    }
+    timer.setInterval(period * 1000);
+    timer.start();
+    connect(&timer, &QTimer::timeout, this, &Provider::updateProxy);
+}
+
 void Provider::fetchProxyList(bool loadFromNetwork) {
     QString data;
     if (!loadFromNetwork) {
@@ -85,4 +102,9 @@ void Provider::storeData(const QString &data) {
         return;
     }
     file.write(jsonData);
+}
+
+void Provider::updateProxy() {
+    qInfo() << "fetch proxy list from provider " << this->providerData.name;
+    //fetchProxyList(true);
 }
