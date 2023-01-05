@@ -18,7 +18,7 @@ Proxy Proxy::trojan(QString input) {
     QUrl url(input);
     Proxy p;
     p.proxyType = ProxyType::Trojan;
-    p.name = url.fragment();
+    p.name = url.fragment(QUrl::FullyDecoded);
     p.trojanData.server = url.host();
     p.trojanData.port = QString("%1").arg(url.port());
     p.trojanData.password = url.userName();
