@@ -4,6 +4,13 @@
 #include <QFile>
 #include "../network/Http.h"
 #include <QTimer>
+#include <QNetworkProxy>
+#include "../proxy/IpInfo.h"
+
+Clash::Clash(QObject *parent) :
+        QObject(parent),
+        process(nullptr) {
+};
 
 void Clash::run() {
     qDebug() << "starting run clash";
@@ -101,9 +108,12 @@ void Clash::processStart() {
     emit started();
     // setup speed query
     doQuerySpeed();
+
+    QTimer::singleShot(2 * 1000, this, &Clash::myIpInfo);
 }
 
 void Clash::processFinished(int exitCode, QProcess::ExitStatus exitStatus) {
+
     emit finished(exitCode, exitStatus);
     if (this->needRestart) {
         qDebug() << "restart clash";
@@ -166,21 +176,49 @@ void Clash::readStderr() {
 void Clash::doQuerySpeed() {
     if (!this->process.isNull()) {
         if (this->process->state() != QProcess::ProcessState::NotRunning) {
-            class Http http;
-            http.get("http://127.0.0.1:9091/traffic",
-                     [this](QByteArray &data) {
-                         auto doc = QJsonDocument::fromJson(data);
-                         if (doc.isObject()) {
-                             auto json = doc.object();
-                             auto up = json["up"].toInt();
-                             auto down = json["down"].toInt();
-                             emit clashSpeed(up, down);
-                         }
-                     },
-                     [this](QString &msg) {
-                         qDebug() << "clash traffic query ends: " << msg;
-                         QTimer::singleShot(1000, this, &Clash::doQuerySpeed);
-                     });
+            Http::get("http://127.0.0.1:9091/traffic",
+                      [this](QByteArray &data) {
+                          auto doc = QJsonDocument::fromJson(data);
+                          if (doc.isObject()) {
+                              auto json = doc.object();
+                              auto up = json["up"].toInt();
+                              auto down = json["down"].toInt();
+                              emit clashSpeed(up, down);
+                          }
+                      },
+                      [this](QString &msg) {
+                          qDebug() << "clash traffic query ends: " << msg;
+                          QTimer::singleShot(1000, this, &Clash::doQuerySpeed);
+                      });
         }
     }
+}
+
+void Clash::myIpInfo() {
+    if (process.isNull()) {
+        return;
+    }
+    if (process->state() == QProcess::ProcessState::NotRunning) {
+        return;
+    }
+
+    networkAccessManager.setProxy(QNetworkProxy(
+            QNetworkProxy::ProxyType::HttpProxy,
+            "127.0.0.1",
+            8889)
+    );
+    Http::get(networkAccessManager, "https://ipinfo.io",
+              [this](const QByteArray &msg, const HttpError &err) {
+                  qDebug() << QString(msg);
+                  if (err.err != QNetworkReply::NoError) {
+                      qWarning() << "cannot fetch ip info: " << err.msg;
+                      emit ipInfoUpdate(IpInfo{}, err.msg);
+                      QTimer::singleShot(20 * 1000, this, &Clash::myIpInfo);
+                      return;
+                  }
+                  auto info = IpInfo::from(msg);
+                  emit ipInfoUpdate(info, err.msg);
+
+                  QTimer::singleShot(3600 * 1000, this, &Clash::myIpInfo);
+              });
 }

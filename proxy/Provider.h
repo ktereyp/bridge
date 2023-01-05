@@ -28,15 +28,20 @@ Q_SIGNALS:
 
     void proxyList(QString providerUuid, QList<Proxy>);
 
+    void proxyListError(QString providerUuid, const QString &msg);
+
 private:
 
     QString loadFromFs();
 
-    void processData(const QString &);
+    bool processData(const QString &);
 
     void storeData(const QString &);
+
 private slots:
+
     void updateProxy();
+
 private:
     QTimer timer;
     ProviderData providerData;

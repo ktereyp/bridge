@@ -4,21 +4,38 @@
 #include <QNetworkReply>
 #include <QObject>
 #include <functional>
+#include <QNetworkProxy>
 
-QNetworkAccessManager Http::networkAccessManager;
+QNetworkAccessManager Http::_networkAccessManager;
 
-void Http::get(const QString &url, const std::function<void(QByteArray &)> &slot) {
+void Http::get(const QString &url, const std::function<void(QByteArray &, const HttpError &err)> &slot) {
+    Http::get(_networkAccessManager, url, slot);
+}
+
+void Http::get(const QString &url,
+               const std::function<void(QByteArray &)> &read,
+               const std::function<void(QString &)> &finished) {
+    Http::get(_networkAccessManager, url, read, finished);
+}
+
+void Http::get(QNetworkAccessManager &networkAccessManager,
+               const QString &url,
+               const std::function<void(QByteArray &, const HttpError &err)> &slot) {
     qDebug() << "HTTP get: " << url;
     QNetworkRequest req((QUrl(url)));
+    req.setHeader(QNetworkRequest::UserAgentHeader, "curl/7.86.0");
 
     auto reply = networkAccessManager.get(req);
 
     QObject::connect(reply, &QNetworkReply::finished, [reply, slot]() {
         auto all = reply->readAll();
-        slot(all);
+        HttpError err;
+        err.err = reply->error();
+        if (err.err != QNetworkReply::NoError) {
+            err.msg = reply->errorString();
+        }
+        slot(all, err);
         reply->deleteLater();
-    });
-    QObject::connect(reply, &QNetworkReply::readyRead, [reply, slot]() {
     });
     QObject::connect(reply, &QNetworkReply::sslErrors, [reply](const QList<QSslError> &errors) {
         QString errorString;
@@ -32,10 +49,10 @@ void Http::get(const QString &url, const std::function<void(QByteArray &)> &slot
     });
 }
 
-void Http::get(const QString &url,
+void Http::get(QNetworkAccessManager &networkAccessManager,
+               const QString &url,
                const std::function<void(QByteArray &)> &read,
                const std::function<void(QString &)> &finished) {
-
     qDebug() << "HTTP get: " << url;
     QNetworkRequest req((QUrl(url)));
 

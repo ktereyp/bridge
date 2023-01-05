@@ -4,18 +4,34 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 
+class HttpError {
+public:
+    QNetworkReply::NetworkError err;
+    QString msg;
+};
+
 class Http {
 
 public:
-    void get(const QString &url, const std::function<void(QByteArray &)> &slot);
+    static void get(const QString &url, const std::function<void(QByteArray &, const HttpError &err)> &callback);
 
-    void get(const QString &url,
-             const std::function<void(QByteArray &)> &read,
-             const std::function<void(QString &)> &finished
+    static void get(const QString &url,
+                    const std::function<void(QByteArray &)> &read,
+                    const std::function<void(QString &)> &finished
+    );
+
+    static void get(QNetworkAccessManager &networkAccessManager,
+                    const QString &url,
+                    const std::function<void(QByteArray &, const HttpError &err)> &slot);
+
+    static void get(QNetworkAccessManager &networkAccessManager,
+                    const QString &url,
+                    const std::function<void(QByteArray &)> &read,
+                    const std::function<void(QString &)> &finished
     );
 
 private:
-    static QNetworkAccessManager networkAccessManager;
+    static QNetworkAccessManager _networkAccessManager;
 };
 
 

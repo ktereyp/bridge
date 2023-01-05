@@ -5,6 +5,7 @@
 #include <QScopedPointer>
 #include "../proxy/Provider.h"
 #include "../proxy/Proxy.h"
+#include "../proxy/IpInfo.h"
 #include <QList>
 #include <QSystemTrayIcon>
 #include <QProcess>
@@ -34,6 +35,7 @@ public:
 private slots:
 
     void openProviderEditor();
+
     void openSettingsEditor();
 
     void addNewProxy();
@@ -43,6 +45,8 @@ private slots:
     void openProxyMenu(const QPoint &pos);
 
     void proxyDoubleClicked(QTreeWidgetItem *item, int column);
+
+    void proxyClicked(QTreeWidgetItem *item, int column);
 
     void menuConnect();
 
@@ -70,6 +74,8 @@ private slots:
 
     void shutdown();
 
+    void receiveMyIpInfo(const IpInfo &info, const QString &msg);
+
 private:
     void closeEvent(QCloseEvent *event);
 
@@ -89,7 +95,6 @@ private:
     QScopedPointer<NewProxyWidget> newProxyWidget;
     QScopedPointer<SettingsWidget> settingsWidget;
     QScopedPointer<Clash> clash;
-
 };
 
 

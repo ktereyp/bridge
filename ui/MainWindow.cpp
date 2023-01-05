@@ -45,6 +45,8 @@ MainWindow::MainWindow(QWidget *parent) :
             this, &MainWindow::openProxyMenu);
     connect(ui->proxyList, &QTreeWidget::itemDoubleClicked,
             this, &MainWindow::proxyDoubleClicked);
+    connect(ui->proxyList, &QTreeWidget::itemClicked,
+            this, &MainWindow::proxyClicked);
     ui->proxyList->setHeaderHidden(true);
     // add new proxy
     connect(ui->addNewProxyBtn, &QPushButton::clicked,
@@ -61,6 +63,9 @@ MainWindow::MainWindow(QWidget *parent) :
             this, &MainWindow::clashFinished);
     connect(this->clash.get(), &Clash::clashSpeed,
             this, &MainWindow::clashSpeed);
+    connect(this->clash.get(), &Clash::ipInfoUpdate,
+            this, &MainWindow::receiveMyIpInfo);
+
 
     // proxy editor
     newProxyWidget.reset(new NewProxyWidget());
@@ -226,6 +231,14 @@ void MainWindow::proxyDoubleClicked(QTreeWidgetItem *item, int column) {
         return;
     }
     doConnect(item);
+}
+
+void MainWindow::proxyClicked(QTreeWidgetItem *item, int column) {
+    auto proxy = item->data(0, Qt::UserRole).value<Proxy>();
+    if (!proxy.isValid()) {
+        return;
+    }
+    this->ui->logView->appendHtml("Proxy: " + proxy.info());
 }
 
 void MainWindow::menuConnect() {
@@ -400,4 +413,28 @@ void MainWindow::shutdown() {
     qDebug() << "shutdown";
     this->close();
     QApplication::exit(0);
+}
+
+void MainWindow::receiveMyIpInfo(const IpInfo &info, const QString &msg) {
+    if (!msg.isEmpty()) {
+        ui->proxyIp->setText(msg);
+    } else {
+        ui->proxyIp->setText(info.country + ", " + info.ip);
+
+        QString statusMsg = QString(""
+                                    "Ip: %1\n"
+                                    "Country: %2\n"
+                                    "City: %3\n"
+                                    "Region: %4\n"
+                                    "Loc: %5\n"
+                                    "Timezone: %6\n").arg(
+                info.ip,
+                info.country,
+                info.city,
+                info.region,
+                info.loc,
+                info.timezone
+        );
+        ui->proxyIp->setStatusTip(statusMsg);
+    }
 }

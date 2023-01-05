@@ -27,23 +27,39 @@ void Provider::fetchProxyList(bool loadFromNetwork) {
     if (!loadFromNetwork) {
         data = loadFromFs();
     }
-    if (data.isEmpty()) {
-        qDebug() << QString("load data of %1 from network").arg(this->providerData.name);
-        class Http http;
-        http.get(this->providerData.url, [this](const QByteArray &bytes) {
-            if (bytes.isEmpty()) {
-                qDebug() << QString("cannot load data of %1 from network").arg(this->providerData.name)
-                         << ": " << this->providerData.url;
-                return;
-            }
-            // store
-            QString data(bytes);
-            storeData(data);
-            processData(data);
-        });
-    } else {
+    if (!data.isEmpty()) {
         processData(data);
+        auto elapseSinceLastUpdate = QDateTime::currentSecsSinceEpoch() - this->lastTime;
+        auto updatePeriod = (qint64) (this->providerData.updatePeriod * 24 * 3600);
+        if (elapseSinceLastUpdate < updatePeriod) {
+            // do nothing
+            return;
+        }
     }
+
+    qDebug() << QString("load data of %1 from network").arg(this->providerData.name);
+
+    Http::get(this->providerData.url, [this](const QByteArray &bytes, const HttpError &err) {
+        if (err.err != QNetworkReply::NoError) {
+            qDebug() << QString("cannot load data of %1 from network").arg(this->providerData.name)
+                     << ": " << this->providerData.url
+                     << ", error: " << err.msg;
+            emit proxyListError(this->providerData.uuid, err.msg);
+            return;
+        }
+
+        if (bytes.isEmpty()) {
+            qDebug() << QString("cannot load data of %1 from network").arg(this->providerData.name)
+                     << ": " << this->providerData.url;
+            emit proxyListError(this->providerData.uuid, "no proxy found");
+            return;
+        }
+        // store
+        QString data(bytes);
+        if (processData(data)) {
+            storeData(data);
+        }
+    });
 }
 
 QString Provider::loadFromFs() {
@@ -70,8 +86,11 @@ QString Provider::loadFromFs() {
     return rawData;
 }
 
-void Provider::processData(const QString &data) {
-    auto decoded = QByteArray::fromBase64(data.toUtf8(), QByteArray::IgnoreBase64DecodingErrors);
+bool Provider::processData(const QString &data) {
+    auto decoded = QByteArray::fromBase64(data.toUtf8(), QByteArray::AbortOnBase64DecodingErrors);
+    if (decoded.isEmpty()) {
+        return false;
+    }
     QString str(decoded);
 
     auto list = str.split("\n");
@@ -85,6 +104,7 @@ void Provider::processData(const QString &data) {
         }
     }
     emit proxyList(this->providerData.uuid, out);
+    return !out.empty();
 }
 
 void Provider::storeData(const QString &data) {
@@ -106,5 +126,5 @@ void Provider::storeData(const QString &data) {
 
 void Provider::updateProxy() {
     qInfo() << "fetch proxy list from provider " << this->providerData.name;
-    //fetchProxyList(true);
+    fetchProxyList(true);
 }

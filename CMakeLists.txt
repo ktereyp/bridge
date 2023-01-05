@@ -39,7 +39,7 @@ add_executable(
         proxy/Clash.cpp
         ui/NewProxyWidget.cpp
         ui/NewProxyWidget.h
-        ui/NewProxyWidget.ui utils/Readable.cpp utils/Readable.h ui/SettingsWidget.cpp ui/SettingsWidget.h ui/SettingsWidget.ui)
+        ui/NewProxyWidget.ui utils/Readable.cpp utils/Readable.h ui/SettingsWidget.cpp ui/SettingsWidget.h ui/SettingsWidget.ui proxy/IpInfo.cpp proxy/IpInfo.h)
 
 target_link_libraries(bridge
         Qt5::Core

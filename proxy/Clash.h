@@ -4,14 +4,15 @@
 #include <QObject>
 #include <QScopedPointer>
 #include <QProcess>
+#include <QNetworkAccessManager>
 #include "../proxy/Proxy.h"
+
+class IpInfo;
 
 class Clash : public QObject {
 Q_OBJECT
 public:
-    explicit Clash(QObject *parent = nullptr) :
-            QObject(parent),
-            process(nullptr) {};
+    explicit Clash(QObject *parent = nullptr);
 
     bool setProxy(Proxy proxy, Proxy lastRelay);
 
@@ -33,6 +34,8 @@ Q_SIGNALS:
 
     void clashSpeed(int up, int down);
 
+    void ipInfoUpdate(const IpInfo &info, const QString &msg);
+
 private slots:
 
     void readStdout();
@@ -47,6 +50,8 @@ private slots:
 
     void doQuerySpeed();
 
+    void myIpInfo();
+
 private:
     QScopedPointer<QProcess> process;
 
@@ -54,6 +59,7 @@ private:
     Proxy proxy;
     bool needRestart = {};
 
+    QNetworkAccessManager networkAccessManager;
 };
 
 
