@@ -58,14 +58,14 @@ bool Clash::setProxy(Proxy proxy, Proxy lastRelay) {
                     << ", err: " << configFile.errorString();
         return false;
     }
-    configFile.write("port: 8889\n");
-    configFile.write("socks-port: 1099\n");
+    configFile.write("port: 8888\n");
+    configFile.write("socks-port: 1089\n");
     configFile.write("allow-lan: true\n");
     configFile.write("bind-address: '*'\n");
     configFile.write("mode: rule\n");
     configFile.write("log-level: info\n");
     configFile.write("ipv6: false\n");
-    configFile.write("external-controller: 127.0.0.1:9091\n");
+    configFile.write("external-controller: 127.0.0.1:9090\n");
 
     auto proxyStr = QString("proxies:\n")
                     + proxy.toClashProxy("trojan");
@@ -176,7 +176,7 @@ void Clash::readStderr() {
 void Clash::doQuerySpeed() {
     if (!this->process.isNull()) {
         if (this->process->state() != QProcess::ProcessState::NotRunning) {
-            Http::get("http://127.0.0.1:9091/traffic",
+            Http::get("http://127.0.0.1:9090/traffic",
                       [this](QByteArray &data) {
                           auto doc = QJsonDocument::fromJson(data);
                           if (doc.isObject()) {
@@ -205,7 +205,7 @@ void Clash::myIpInfo() {
     networkAccessManager.setProxy(QNetworkProxy(
             QNetworkProxy::ProxyType::HttpProxy,
             "127.0.0.1",
-            8889)
+            8888)
     );
     Http::get(networkAccessManager, "https://ipinfo.io",
               [this](const QByteArray &msg, const HttpError &err) {
