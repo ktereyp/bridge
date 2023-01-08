@@ -62,11 +62,9 @@ jobs:
     #   modify them (or add more) to build your code if your project, please refer to the EXAMPLE below for guidance.
 
     - run: |
-        echo "Install Qt5"
-        sudo apt-get install -y qt5-default cmake
         echo "Build..."
-        mkdir build
-        cd build
+        sudo apt install -y qtbase5-dev qt5-qmake cmake
+        mkdir build && cd build
         cmake .. && make -j2
 
     - name: Perform CodeQL Analysis
