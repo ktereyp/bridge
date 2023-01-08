@@ -54,9 +54,13 @@ private slots:
 
     void menuOpenProviderEditor();
 
+    void menuUpdateProxyList();
+
     void menuDeleteProvider();
 
     void receivedProviderProxyList(const QString &providerUuid, const QList<Proxy> &);
+
+    void receiveProxyListError(QString providerUuid, const QString &msg);
 
     void clashStart();
 

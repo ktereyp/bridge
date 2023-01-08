@@ -99,6 +99,10 @@ void MainWindow::loadProxy() {
                 &Provider::proxyList,
                 this,
                 &MainWindow::receivedProviderProxyList);
+        connect(provider,
+                &Provider::proxyListError,
+                this,
+                &MainWindow::receiveProxyListError);
 
         provider->fetchProxyList();
     }
@@ -123,6 +127,9 @@ void MainWindow::receivedProviderProxyList(const QString &providerUuid, const QL
         providerName = (*providerIt)->getProviderData().name;
     }
 
+    qDebug() << "update proxy: provider: " << providerName
+             << ", proxy count: " << list.size();
+
     auto rootItems = ui->proxyList->findItems(providerName, Qt::MatchFlag::MatchExactly);
     QTreeWidgetItem *rootItem;
     if (!rootItems.empty()) {
@@ -145,6 +152,10 @@ void MainWindow::receivedProviderProxyList(const QString &providerUuid, const QL
         rootItem->addChild(item);
     }
     rootItem->setExpanded(true);
+}
+
+void MainWindow::receiveProxyListError(QString providerUuid, const QString &msg) {
+    QMessageBox::warning(this, "Update proxy error", msg);
 }
 
 void MainWindow::openProviderEditor() {
@@ -188,6 +199,11 @@ void MainWindow::openProxyMenu(const QPoint &pos) {
         connect(actionEdit, &QAction::triggered,
                 this, &MainWindow::menuOpenProviderEditor);
 
+        auto actionUpdate = new QAction(tr("update"), this);
+        actionEdit->setData(pos);
+        connect(actionUpdate, &QAction::triggered,
+                this, &MainWindow::menuUpdateProxyList);
+
         auto actionDelete = new QAction(tr("delete"), this);
         actionDelete->setData(pos);
         connect(actionDelete, &QAction::triggered,
@@ -195,6 +211,7 @@ void MainWindow::openProxyMenu(const QPoint &pos) {
 
         QMenu menu(ui->proxyList);
         menu.addAction(actionEdit);
+        menu.addAction(actionUpdate);
         menu.addAction(actionDelete);
         menu.exec(ui->proxyList->mapToGlobal(pos));
         return;
@@ -267,6 +284,19 @@ void MainWindow::menuOpenProviderEditor() {
     if (providerIt != this->providerList.end()) {
         this->providerEditor->setProvider((*providerIt)->getProviderData());
         openProviderEditor();
+    }
+}
+
+void MainWindow::menuUpdateProxyList() {
+    auto *action = qobject_cast<QAction *>(sender());
+    auto pos = action->data().toPoint();
+    auto item = ui->proxyList->itemAt(pos);
+    auto providerUUid = item->data(0, ROLE_PROVIDER_UUID).toString();
+    auto providerIt = std::find_if(this->providerList.begin(), this->providerList.end(), [providerUUid](auto i) {
+        return i->getProviderData().uuid == providerUUid;
+    });
+    if (providerIt != this->providerList.end()) {
+        (*providerIt)->fetchProxyList(true);
     }
 }
 
