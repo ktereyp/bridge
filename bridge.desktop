@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Bridge
+Type=Application
+Comment=Gui for clash
+Exec=/opt/bridge/bridge
+TryExec=/opt/bridge/bridge
+Icon=bridge
+Categories=Network;
