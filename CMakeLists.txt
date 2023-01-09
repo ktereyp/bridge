@@ -17,6 +17,8 @@ find_package(Qt5 COMPONENTS
         Network
         REQUIRED)
 
+add_compile_definitions(CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE})
+
 add_executable(
         bridge
         bridge.qrc

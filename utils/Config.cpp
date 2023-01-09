@@ -7,6 +7,9 @@
 #include <QList>
 #include <QUuid>
 
+#define QUOTE(name) #name
+#define STR(macro) QUOTE(macro)
+
 const QString Config::PROVIDER_KEY = "providers";
 const QString Config::PROXY_KEY = "proxies";
 const QString Config::CLASH_BINARY_KEY = "clash-binary";
@@ -19,7 +22,15 @@ QString Config::configDir() {
     }
     auto env = QProcessEnvironment::systemEnvironment();
     auto home = env.value("HOME");
-    return home + "/.config/" + "bridge";
+    auto name = QString("bridge");
+#ifdef CMAKE_BUILD_TYPE
+    auto buildType = QString(STR(CMAKE_BUILD_TYPE));
+    qDebug() << buildType;
+    if (buildType.compare("Debug") == 0) {
+        name += "-debug";
+    }
+#endif
+    return home + "/.config/" + name;
 }
 
 QString Config::get(const QString &key) {
