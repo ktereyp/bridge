@@ -80,6 +80,7 @@ private slots:
 
     void receiveMyIpInfo(const IpInfo &info, const QString &msg);
 
+    void clearConnectLog();
 private:
     void closeEvent(QCloseEvent *event);
 

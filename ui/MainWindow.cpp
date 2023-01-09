@@ -83,6 +83,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->settingButton, &QPushButton::clicked,
             this, &MainWindow::openSettingsEditor);
 
+    // clear log
+    connect(ui->clearLogBtn, &QPushButton::clicked,
+            this, &MainWindow::clearConnectLog);
+
     loadProxy();
 }
 
@@ -467,4 +471,8 @@ void MainWindow::receiveMyIpInfo(const IpInfo &info, const QString &msg) {
         );
         ui->proxyIp->setStatusTip(statusMsg);
     }
+}
+
+void MainWindow::clearConnectLog() {
+    ui->logView->clear();
 }
