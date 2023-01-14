@@ -1,6 +1,5 @@
 #include "Clash.h"
 #include <QDebug>
-#include "../utils/Config.h"
 #include <QFile>
 #include "../network/Http.h"
 #include <QTimer>
@@ -39,7 +38,7 @@ void Clash::run() {
             this, &Clash::readStderr);
 
     QStringList args{"-f", this->clashConfigFile};
-    auto clashBinary = Config::get(Config::CLASH_BINARY_KEY);
+    auto clashBinary = Config::get(Config::KEY_CLASH_BINARY);
     this->process->start(clashBinary, args);
 }
 
@@ -50,22 +49,34 @@ void Clash::stop() {
 }
 
 bool Clash::setProxy(Proxy proxy, Proxy lastRelay) {
-    auto clashConfig = Config::getClashConfigFile();
+    auto clashYaml = Config::getClashYamlPath();
     // create yaml
-    QFile configFile(clashConfig);
+    QFile configFile(clashYaml);
     if (!configFile.open(QFile::OpenModeFlag::WriteOnly)) {
-        qCritical() << "cannot create clash config file " << clashConfig
+        qCritical() << "cannot create clash config file " << clashYaml
                     << ", err: " << configFile.errorString();
         return false;
     }
-    configFile.write("port: 8888\n");
-    configFile.write("socks-port: 1089\n");
-    configFile.write("allow-lan: true\n");
-    configFile.write("bind-address: '*'\n");
-    configFile.write("mode: rule\n");
-    configFile.write("log-level: info\n");
-    configFile.write("ipv6: false\n");
-    configFile.write("external-controller: 127.0.0.1:9090\n");
+    auto clashConfig = Config::getClashConfig();
+    this->clashConfigData = clashConfig;
+
+    auto mainConfig = QString("port: %1\n"
+                              "socks-port: %2\n"
+                              "allow-lan: %3\n"
+                              "bind-address: '%4'\n"
+                              "mode: rule\n"
+                              "log-level: %5\n"
+                              "ipv6: false\n"
+                              "external-controller: 127.0.0.1:%6\n")
+            .arg(
+                    QString::number(clashConfig.listenPort),
+                    QString::number(clashConfig.socksPort),
+                    QString::number(clashConfig.allowLan) > 0 ? "true" : "false",
+                    clashConfig.bindAddress,
+                    clashConfig.logLevel,
+                    QString::number(clashConfig.controllerPort)
+            ).toUtf8();
+    configFile.write(mainConfig);
 
     auto proxyStr = QString("proxies:\n")
                     + proxy.toClashProxy("trojan");
@@ -95,7 +106,7 @@ bool Clash::setProxy(Proxy proxy, Proxy lastRelay) {
                      "  - MATCH,relay\n"
     );
     configFile.close();
-    this->clashConfigFile = clashConfig;
+    this->clashConfigFile = clashYaml;
     this->proxy = proxy;
     return true;
 }
@@ -176,7 +187,7 @@ void Clash::readStderr() {
 void Clash::doQuerySpeed() {
     if (!this->process.isNull()) {
         if (this->process->state() != QProcess::ProcessState::NotRunning) {
-            Http::get("http://127.0.0.1:9090/traffic",
+            Http::get(QString("http://127.0.0.1:%1/traffic").arg(this->clashConfigData.controllerPort),
                       [this](QByteArray &data) {
                           auto doc = QJsonDocument::fromJson(data);
                           if (doc.isObject()) {
@@ -205,11 +216,10 @@ void Clash::myIpInfo() {
     networkAccessManager.setProxy(QNetworkProxy(
             QNetworkProxy::ProxyType::HttpProxy,
             "127.0.0.1",
-            8888)
+            this->clashConfigData.listenPort)
     );
     Http::get(networkAccessManager, "https://ipinfo.io",
               [this](const QByteArray &msg, const HttpError &err) {
-                  qDebug() << QString(msg);
                   if (err.err != QNetworkReply::NoError) {
                       qWarning() << "cannot fetch ip info: " << err.msg;
                       emit ipInfoUpdate(IpInfo{}, err.msg);

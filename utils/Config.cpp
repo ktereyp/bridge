@@ -1,18 +1,22 @@
 #include "Config.h"
-#include "../proxy/Proxy.h"
 #include <QProcessEnvironment>
 #include <QSettings>
 #include <QDir>
-#include <QDebug>
 #include <QList>
 #include <QUuid>
 
 #define QUOTE(name) #name
 #define STR(macro) QUOTE(macro)
 
-const QString Config::PROVIDER_KEY = "providers";
-const QString Config::PROXY_KEY = "proxies";
-const QString Config::CLASH_BINARY_KEY = "clash-binary";
+const QString Config::KEY_PROVIDER = "providers";
+const QString Config::KEY_PROXY = "proxies";
+const QString Config::KEY_CLASH_BINARY = "clash-binary";
+const QString Config::KEY_CLASH_LISTEN_PORT = "clash-listen-port";
+const QString Config::KEY_CLASH_CONTROLLER_PORT = "clash-controller-port";
+const QString Config::KEY_CLASH_SOCKS_PORT = "clash-socks-port";
+const QString Config::KEY_CLASH_ALLOW_LAN = "clash-allow-lan";
+const QString Config::KEY_CLASH_BIND_ADDRESS = "clash-bind-address";
+const QString Config::KEY_CLASH_LOG_LEVEL = "clash-log-level";
 
 QString Config::preferConfigDir = "";
 
@@ -25,7 +29,6 @@ QString Config::configDir() {
     auto name = QString("bridge");
 #ifdef CMAKE_BUILD_TYPE
     auto buildType = QString(STR(CMAKE_BUILD_TYPE));
-    qDebug() << buildType;
     if (buildType.compare("Debug") == 0) {
         name += "-debug";
     }
@@ -55,7 +58,7 @@ QString Config::get(const QString &group, const QString &key) {
 
 QList<ProviderData> Config::getProviders() {
     QSettings settings(configFile(), QSettings::Format::IniFormat);
-    int n = settings.beginReadArray(PROVIDER_KEY);
+    int n = settings.beginReadArray(KEY_PROVIDER);
 
     QList<ProviderData> list;
     for (auto i = 0; i < n; i++) {
@@ -85,7 +88,7 @@ void Config::setProvider(ProviderData &provider) {
 
     // find exist item
     int lastIndex = -1;
-    auto size = settings.beginReadArray(PROVIDER_KEY);
+    auto size = settings.beginReadArray(KEY_PROVIDER);
     for (auto i = 0; i < size; i++) {
         settings.setArrayIndex(i);
         auto v = settings.value("uuid").toString();
@@ -96,7 +99,7 @@ void Config::setProvider(ProviderData &provider) {
     }
     settings.endArray();
 
-    settings.beginWriteArray(PROVIDER_KEY);
+    settings.beginWriteArray(KEY_PROVIDER);
 
     if (lastIndex >= 0) {
         settings.setArrayIndex(lastIndex);
@@ -123,7 +126,7 @@ void Config::setProxy(Proxy &proxy) {
     }
     // find exist item
     int lastIndex = -1;
-    auto size = settings.beginReadArray(PROXY_KEY);
+    auto size = settings.beginReadArray(KEY_PROXY);
     for (auto i = 0; i < size; i++) {
         settings.setArrayIndex(i);
         auto v = settings.value("uuid").toString();
@@ -135,7 +138,7 @@ void Config::setProxy(Proxy &proxy) {
     settings.endArray();
 
     //
-    settings.beginWriteArray(PROXY_KEY);
+    settings.beginWriteArray(KEY_PROXY);
 
     if (lastIndex >= 0) {
         settings.setArrayIndex(lastIndex);
@@ -153,7 +156,7 @@ QList<Proxy> Config::getProxies() {
     QSettings settings(configFile(), QSettings::Format::IniFormat);
 
     QList<Proxy> list;
-    auto size = settings.beginReadArray(PROXY_KEY);
+    auto size = settings.beginReadArray(KEY_PROXY);
     for (auto i = 0; i < size; i++) {
         settings.setArrayIndex(i);
         auto json = settings.value("json").toByteArray();
@@ -164,11 +167,56 @@ QList<Proxy> Config::getProxies() {
     return list;
 }
 
+ClashConfigData Config::getClashConfig() {
+    ClashConfigData cfg;
+    cfg.binaryPath = get(KEY_CLASH_BINARY);
+    auto setPort = [](ushort *port, const QString &key) {
+        bool ok;
+        auto v = get(key).toUShort(&ok);
+        if (ok) {
+            *port = v;
+        }
+    };
+    setPort(&cfg.listenPort, KEY_CLASH_LISTEN_PORT);
+    setPort(&cfg.controllerPort, KEY_CLASH_CONTROLLER_PORT);
+    setPort(&cfg.socksPort, KEY_CLASH_SOCKS_PORT);
+    cfg.allowLan = get(KEY_CLASH_ALLOW_LAN).toInt();
+    auto bindAddress = get(KEY_CLASH_BIND_ADDRESS);
+    if (bindAddress.isEmpty()) {
+        bindAddress = "*";
+    }
+    cfg.bindAddress = bindAddress;
+    cfg.logLevel = get(KEY_CLASH_LOG_LEVEL);
+
+    return cfg;
+}
+
+void Config::setClashConfig(ClashConfigData &cfg) {
+    set({
+                {KEY_CLASH_LISTEN_PORT,     QString::number(cfg.listenPort)},
+                {KEY_CLASH_CONTROLLER_PORT, QString::number(cfg.controllerPort)},
+                {KEY_CLASH_SOCKS_PORT,      QString::number(cfg.socksPort)},
+                {KEY_CLASH_ALLOW_LAN,       QString::number(cfg.allowLan)},
+                {KEY_CLASH_BIND_ADDRESS,    cfg.bindAddress},
+                {KEY_CLASH_LOG_LEVEL,       cfg.logLevel},
+        });
+}
+
 void Config::set(const QString &key, const QString &value) {
     prepareConfigDir();
 
     QSettings settings(configFile(), QSettings::Format::IniFormat);
     settings.setValue(key, value);
+    settings.sync();
+}
+
+void Config::set(const QMap<QString, QString> &kvs) {
+    prepareConfigDir();
+
+    QSettings settings(configFile(), QSettings::Format::IniFormat);
+    for (auto &key: kvs.keys()) {
+        settings.setValue(key, kvs[key]);
+    }
     settings.sync();
 }
 
@@ -201,7 +249,7 @@ QString Config::getProviderCacheFile(const QString &providerName) {
     return Config::configDir() + "/" + providerName + ".json";
 }
 
-QString Config::getClashConfigFile() {
+QString Config::getClashYamlPath() {
     prepareConfigDir();
     auto clashConfigDir = configDir() + "/" + "generated";
 
@@ -220,7 +268,7 @@ void Config::deleteProvider(const QString &providerUuid) {
 
     // find exist item
     int providerIndex = -1;
-    auto size = settings.beginReadArray(PROVIDER_KEY);
+    auto size = settings.beginReadArray(KEY_PROVIDER);
     for (auto i = 0; i < size; i++) {
         settings.setArrayIndex(i);
         auto v = settings.value("uuid").toString();
@@ -232,7 +280,7 @@ void Config::deleteProvider(const QString &providerUuid) {
     settings.endArray();
 
     //
-    settings.beginWriteArray(PROVIDER_KEY);
+    settings.beginWriteArray(KEY_PROVIDER);
 
     if (providerIndex < 0) {
         qWarning() << "cannot find a provider whose uuid is " + providerUuid;

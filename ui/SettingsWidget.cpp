@@ -10,9 +10,17 @@ SettingsWidget::SettingsWidget(QWidget *parent) :
         QWidget(parent), ui(new Ui::SettingsWidget) {
     ui->setupUi(this);
 
-    auto clashBinary = Config::get(Config::CLASH_BINARY_KEY);
-    ui->clashBinaryFileInput->setText(clashBinary);
-    ui->clashVerifyBtn->setEnabled(!clashBinary.isEmpty());
+    auto clashConfig = Config::getClashConfig();
+    ui->clashBinaryFileInput->setText(clashConfig.binaryPath);
+    ui->clashVerifyBtn->setEnabled(!clashConfig.binaryPath.isEmpty());
+    ui->clashListenPortInput->setText(QString::number(clashConfig.listenPort));
+    ui->clashControllerPortInput->setText(QString::number(clashConfig.controllerPort));
+    ui->socksPortInput->setText(QString::number(clashConfig.socksPort));
+    ui->bindAddressInput->setCurrentIndex(0);
+    if (clashConfig.allowLan) {
+        ui->allowLanInput->setCheckState(Qt::CheckState::Checked);
+    }
+    ui->logLevelInput->setCurrentText(clashConfig.logLevel);
 
     connect(ui->choseFileBtn, &QPushButton::clicked,
             this, &SettingsWidget::chooseFile);
@@ -39,7 +47,6 @@ void SettingsWidget::verifyClashBinary() {
             [p, this](int exitCode, QProcess::ExitStatus) {
                 auto msg = p->readAll();
                 if (exitCode != 0) {
-                    QMessageBox msgBox;
                     QMessageBox::warning(this, "Invalid clash", QString(msg));
                 } else if (msg.contains("Clash")) {
                     QMessageBox::information(this, "Clash", msg);
@@ -54,7 +61,47 @@ void SettingsWidget::verifyClashBinary() {
 }
 
 void SettingsWidget::saveConfig() {
-    auto file = ui->clashBinaryFileInput->text();
-    Config::set(Config::CLASH_BINARY_KEY, file);
+    auto clashConfig = Config::getClashConfig();
+
+    auto clashBinaryFile = ui->clashBinaryFileInput->text();
+    if (clashBinaryFile.isEmpty()) {
+        QMessageBox::warning(this, "Invalid Configuration", "clash binary missing");
+        return;
+    }
+    clashConfig.binaryPath = clashBinaryFile;
+
+    QSet<ushort> usedPorts = {};
+    QString msg;
+    auto setPort = [&usedPorts, &msg](ushort *port, const QString &input) -> QString {
+        bool ok;
+        auto v = input.toUShort(&ok);
+        if (ok) {
+            if (usedPorts.contains(v)) {
+                return "port has been used";
+            }
+            *port = v;
+            usedPorts.insert(v);
+            return {};
+        } else {
+            return "invalid value";
+        }
+    };
+    if (auto p = setPort(&clashConfig.listenPort, ui->clashListenPortInput->text()); !p.isEmpty()) {
+        QMessageBox::warning(this, "Invalid Configuration", "listen port is not valid: " + msg);
+    }
+    if (auto p = setPort(&clashConfig.controllerPort, ui->clashControllerPortInput->text()); !p.isEmpty()) {
+        QMessageBox::warning(this, "Invalid Configuration", "controller port is not valid: " + msg);
+    }
+    if (auto p = setPort(&clashConfig.socksPort, ui->socksPortInput->text()); !p.isEmpty()) {
+        QMessageBox::warning(this, "Invalid Configuration", "socks port is not valid: " + msg);
+    }
+    auto bindAddress = ui->bindAddressInput->currentText();
+    if (bindAddress == "all") {
+        clashConfig.bindAddress = "*";
+    }
+    clashConfig.allowLan = ui->allowLanInput->isChecked();
+    clashConfig.logLevel = ui->logLevelInput->currentText();
+    Config::setClashConfig(clashConfig);
+
     close();
 }

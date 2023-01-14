@@ -6,8 +6,10 @@
 #include <QProcess>
 #include <QNetworkAccessManager>
 #include "../proxy/Proxy.h"
+#include "../utils/Config.h"
 
 class IpInfo;
+class ClashConfigData;
 
 class Clash : public QObject {
 Q_OBJECT
@@ -57,6 +59,7 @@ private:
 
     QString clashConfigFile;
     Proxy proxy;
+    ClashConfigData clashConfigData;
     bool needRestart = {};
 
     QNetworkAccessManager networkAccessManager;
