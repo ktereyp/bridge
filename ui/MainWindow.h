@@ -112,6 +112,7 @@ private:
     QScopedPointer<NewProxyWidget> newProxyWidget;
     QScopedPointer<SettingsWidget> settingsWidget;
     QScopedPointer<Clash> clash;
+    IpInfo ipInfo = {};
 };
 
 

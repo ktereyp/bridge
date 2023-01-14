@@ -25,6 +25,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->logView->setLineWrapMode(QPlainTextEdit::LineWrapMode::NoWrap);
     ui->logView->setReadOnly(true);
     setWindowTitle("bridge");
+    ui->splitter->setStretchFactor(0, 1);
+    ui->splitter->setStretchFactor(1, 2);
     // trayIcon
     auto *trayMenu = new QMenu(this);
     auto *showMainWindow = new QAction("show", this);
@@ -462,8 +464,13 @@ void MainWindow::clashStderr(const QString &msg) {
 void MainWindow::clashSpeed(int up, int down) {
     auto upSpeed = QString("%1 ↑").arg(Readable::bytes(up));
     auto downSpeed = QString("%2 ↓").arg(Readable::bytes(down));
-    ui->upSpeed->setText(upSpeed);
-    ui->downSpeed->setText(downSpeed);
+
+    if (this->ipInfo.ip.isEmpty()) {
+        ui->statusbar->showMessage(upSpeed + " " + downSpeed);
+    } else {
+        ui->statusbar->showMessage(
+                this->ipInfo.city + ", " + this->ipInfo.ip + "         " + upSpeed + " " + downSpeed);
+    }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
@@ -497,26 +504,9 @@ void MainWindow::shutdown() {
 }
 
 void MainWindow::receiveMyIpInfo(const IpInfo &info, const QString &msg) {
+    this->ipInfo = info;
     if (!msg.isEmpty()) {
-        ui->proxyIp->setText(msg);
-    } else {
-        ui->proxyIp->setText(info.country + ", " + info.ip);
-
-        QString statusMsg = QString(""
-                                    "Ip: %1\n"
-                                    "Country: %2\n"
-                                    "City: %3\n"
-                                    "Region: %4\n"
-                                    "Loc: %5\n"
-                                    "Timezone: %6\n").arg(
-                info.ip,
-                info.country,
-                info.city,
-                info.region,
-                info.loc,
-                info.timezone
-        );
-        ui->proxyIp->setStatusTip(statusMsg);
+        log(msg, LOG::ERROR);
     }
 }
 

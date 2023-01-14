@@ -118,7 +118,7 @@ void Clash::errorOccurred(QProcess::ProcessError error) {
 void Clash::processStart() {
     emit started();
     // setup speed query
-    doQuerySpeed();
+    QTimer::singleShot(1 * 1000, this, &Clash::doQuerySpeed);
 
     QTimer::singleShot(2 * 1000, this, &Clash::myIpInfo);
 }
