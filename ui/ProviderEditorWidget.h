@@ -18,6 +18,10 @@ public:
 
     void setProvider(const ProviderData &provider);
 
+Q_SIGNALS:
+
+    void providerEditFinish(const ProviderData &provider);
+
 private slots:
 
     void save();

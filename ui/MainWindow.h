@@ -27,6 +27,11 @@ class QTreeWidgetItem;
 class MainWindow : public QMainWindow {
 Q_OBJECT
 
+    enum LOG {
+        INFO,
+        ERROR,
+    };
+
 public:
     explicit MainWindow(QWidget *parent = nullptr);
 
@@ -35,6 +40,8 @@ public:
 private slots:
 
     void openProviderEditor();
+
+    void checkProvider(const ProviderData &data);
 
     void openSettingsEditor();
 
@@ -81,15 +88,20 @@ private slots:
     void receiveMyIpInfo(const IpInfo &info, const QString &msg);
 
     void clearConnectLog();
+
 private:
     void closeEvent(QCloseEvent *event);
 
 private:
     void loadProxy();
 
+    void addProvider(const ProviderData &provider);
+
     void doConnect(QTreeWidgetItem *item);
 
     void editProxy(Proxy p);
+
+    void log(const QString &msg, LOG level = LOG::INFO);
 
 private:
     Ui::MainWindow *ui;

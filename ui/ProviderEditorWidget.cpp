@@ -28,6 +28,7 @@ void ProviderEditorWidget::save() {
     }
     this->providerData.updatePeriod = updatePeriod;
     Config::setProvider(this->providerData);
+    emit this->providerEditFinish(this->providerData);
 
     close();
 }

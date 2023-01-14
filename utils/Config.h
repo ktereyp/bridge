@@ -38,7 +38,6 @@ public:
     static const QString KEY_CLASH_BIND_ADDRESS;
     static const QString KEY_CLASH_LOG_LEVEL;
 
-    static void deleteProvider(const QString &qString);
 
 public:
     static QString configDir();
@@ -46,6 +45,8 @@ public:
     static QList<ProviderData> getProviders();
 
     static void setProvider(ProviderData &provider);
+
+    static void deleteProvider(const QString &qString);
 
     static void setProxy(Proxy &provider);
 

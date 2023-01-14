@@ -77,6 +77,8 @@ MainWindow::MainWindow(QWidget *parent) :
     providerEditor.reset(new ProviderEditorWidget());
     connect(ui->addProviderBtn, &QPushButton::clicked,
             this, &MainWindow::openProviderEditor);
+    connect(providerEditor.get(), &ProviderEditorWidget::providerEditFinish,
+            this, &MainWindow::checkProvider);
 
     // settings
     settingsWidget.reset(new SettingsWidget());
@@ -97,22 +99,26 @@ MainWindow::~MainWindow() {
 void MainWindow::loadProxy() {
     auto providerDataList = Config::getProviders();
     for (auto &p: providerDataList) {
-        auto provider = new Provider(p);
-        this->providerList.append(provider);
-        connect(provider,
-                &Provider::proxyList,
-                this,
-                &MainWindow::receivedProviderProxyList);
-        connect(provider,
-                &Provider::proxyListError,
-                this,
-                &MainWindow::receiveProxyListError);
-
-        provider->fetchProxyList();
+        addProvider(p);
     }
 
     this->proxies = Config::getProxies();
     receivedProviderProxyList(tr("Default"), this->proxies);
+}
+
+void MainWindow::addProvider(const ProviderData &p) {
+    auto provider = new Provider(p);
+    this->providerList.append(provider);
+    connect(provider,
+            &Provider::proxyList,
+            this,
+            &MainWindow::receivedProviderProxyList);
+    connect(provider,
+            &Provider::proxyListError,
+            this,
+            &MainWindow::receiveProxyListError);
+
+    provider->fetchProxyList();
 }
 
 void MainWindow::receivedProviderProxyList(const QString &providerUuid, const QList<Proxy> &list) {
@@ -133,6 +139,8 @@ void MainWindow::receivedProviderProxyList(const QString &providerUuid, const QL
 
     qDebug() << "update proxy: provider: " << providerName
              << ", proxy count: " << list.size();
+
+    log(QString("provider '%1' update: proxy count: %2").arg(providerName).arg(list.size()));
 
     auto rootItems = ui->proxyList->findItems(providerName, Qt::MatchFlag::MatchExactly);
     QTreeWidgetItem *rootItem;
@@ -159,11 +167,50 @@ void MainWindow::receivedProviderProxyList(const QString &providerUuid, const QL
 }
 
 void MainWindow::receiveProxyListError(QString providerUuid, const QString &msg) {
+    log(msg, LOG::ERROR);
     QMessageBox::warning(this, "Update proxy error", msg);
 }
 
 void MainWindow::openProviderEditor() {
+    providerEditor->setProvider({});
     providerEditor->show();
+}
+
+void MainWindow::checkProvider(const ProviderData &data) {
+    auto providerIt = std::find_if(this->providerList.begin(), this->providerList.end(), [data](auto i) {
+        return i->getProviderData().uuid == data.uuid;
+    });
+    if (providerIt == this->providerList.end()) {
+        // new
+        addProvider(data);
+        log("add new provider " + data.name);
+        return;
+    }
+    auto oldData = (*providerIt)->getProviderData();
+    (*providerIt)->setProviderData(data);
+
+    auto rootItems = ui->proxyList->findItems(oldData.name, Qt::MatchFlag::MatchExactly);
+    QTreeWidgetItem *rootItem = nullptr;
+    for (auto item: rootItems) {
+        auto uuid = item->data(0, ROLE_PROVIDER_UUID).toString();
+        if (uuid == data.uuid) {
+            rootItem = item;
+            break;
+        }
+    }
+    if (!rootItem) {
+        log("cannot find provider with uuid " + data.uuid, LOG::ERROR);
+        return;
+    }
+
+    if (oldData.name != data.name) {
+        rootItem->setText(0, data.name);
+        log(QString("provider name change: %1 -> %2").arg(oldData.name, data.name));
+    }
+    if (oldData.url != data.url) {
+        (*providerIt)->fetchProxyList(true);
+        log(QString("provider url changed, re-fetch data..."));
+    }
 }
 
 void MainWindow::openSettingsEditor() {
@@ -355,7 +402,7 @@ void MainWindow::clashStart() {
                   QString("clash is running")
                   +
                   "</span>";
-    clashStdout(msg);
+    log(msg);
     // remove last connected icon
     auto topLevelItemCount = ui->proxyList->topLevelItemCount();
     for (auto i = 0; i < topLevelItemCount; i++) {
@@ -475,4 +522,18 @@ void MainWindow::receiveMyIpInfo(const IpInfo &info, const QString &msg) {
 
 void MainWindow::clearConnectLog() {
     ui->logView->clear();
+}
+
+void MainWindow::log(const QString &msg, LOG level) {
+    if (level == LOG::ERROR) {
+        QString m = "<span style=\"color:red;white-space:pre\">"
+                    +
+                    msg
+                    +
+                    "</span>";
+        clashStderr(msg);
+        ui->logView->appendHtml(m);
+    } else {
+        ui->logView->appendHtml(msg);
+    }
 }

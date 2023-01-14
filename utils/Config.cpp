@@ -67,6 +67,9 @@ QList<ProviderData> Config::getProviders() {
         auto name = settings.value("name").toString();
         auto type = settings.value("type").toInt();
         auto subscribeUrl = settings.value("url").toString();
+        if (uuid.isEmpty()) {
+            continue;
+        }
         ProviderData provider;
         provider.uuid = uuid;
         provider.name = name;
@@ -292,6 +295,9 @@ void Config::deleteProvider(const QString &providerUuid) {
     settings.remove("url");
     settings.remove("type");
 
+    settings.endArray();
+
+    settings.beginWriteArray(KEY_PROVIDER, size - 1);
     settings.endArray();
 
     settings.sync();
