@@ -1,6 +1,6 @@
 <RCC>
     <qresource prefix="/">
-        <file>assets/icon.png</file>
+        <file>assets/bridge.png</file>
         <file>assets/green_check.jpg</file>
     </qresource>
 </RCC>

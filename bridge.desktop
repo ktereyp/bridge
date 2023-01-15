@@ -2,7 +2,7 @@
 Name=Bridge
 Type=Application
 Comment=Gui for clash
-Exec=/opt/bridge/bridge
-TryExec=/opt/bridge/bridge
+Exec=bridge
+TryExec=bridge
 Icon=bridge
 Categories=Network;

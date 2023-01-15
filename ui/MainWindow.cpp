@@ -35,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(exitMainWindow, &QAction::triggered, this, &MainWindow::shutdown);
     trayMenu->addAction(showMainWindow);
     trayMenu->addAction(exitMainWindow);
-    this->trayIcon = new QSystemTrayIcon(QIcon(":/assets/icon.png"), this);
+    this->trayIcon = new QSystemTrayIcon(QIcon(":/assets/bridge.png"), this);
     this->trayIcon->setContextMenu(trayMenu);
     this->trayIcon->show();
     connect(this->trayIcon, &QSystemTrayIcon::activated,

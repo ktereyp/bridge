@@ -8,7 +8,7 @@ int main(int argc, char *argv[]) {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
     QApplication a(argc, argv);
-    a.setWindowIcon(QIcon(":/assets/icon.png"));
+    a.setWindowIcon(QIcon(":/assets/bridge.png"));
 
     MainWindow window;
     window.show();
