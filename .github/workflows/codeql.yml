@@ -54,16 +54,12 @@ jobs:
         # Details on CodeQL's query packs refer to : https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
         # queries: security-extended,security-and-quality
 
-
-    # ℹ️ Command-line programs to run using the OS shell.
-    # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
-
-    #   If the Autobuild fails above, remove it and uncomment the following three lines.
-    #   modify them (or add more) to build your code if your project, please refer to the EXAMPLE below for guidance.
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
 
     - run: |
         echo "Build..."
-        sudo apt install -y qtbase5-dev qt5-qmake cmake
+        sudo apt install -y cmake
         mkdir build && cd build
         cmake .. && make -j2
 
