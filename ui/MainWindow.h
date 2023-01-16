@@ -39,7 +39,7 @@ public:
 
 private slots:
 
-    void openProviderEditor();
+    void newProviderEditor();
 
     void checkProvider(const ProviderData &data);
 

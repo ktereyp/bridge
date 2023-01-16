@@ -13,11 +13,7 @@ Provider::Provider(ProviderData data, QObject *parent) :
     // update period, at least 10 minutes
     qDebug() << "update period of provider " << providerData.name
              << ": " << providerData.updatePeriod << " days";
-    auto period = (long) (providerData.updatePeriod * 3600 * 24);
-    if (period < 60 * 10) {
-        period = 60 * 10;
-    }
-    timer.setInterval(period * 1000);
+    timer.setInterval(10 * 1000);
     timer.start();
     connect(&timer, &QTimer::timeout, this, &Provider::updateProxy);
 }
@@ -125,6 +121,13 @@ void Provider::storeData(const QString &data) {
 }
 
 void Provider::updateProxy() {
+    auto elapseSinceLastUpdate = QDateTime::currentSecsSinceEpoch() - this->lastTime;
+    auto updatePeriod = (qint64) (this->providerData.updatePeriod * 24 * 3600);
+    if (elapseSinceLastUpdate < updatePeriod) {
+        // do nothing
+        return;
+    }
+
     qInfo() << "fetch proxy list from provider " << this->providerData.name;
     fetchProxyList(true);
 }

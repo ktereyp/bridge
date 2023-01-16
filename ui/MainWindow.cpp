@@ -78,7 +78,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // provider editor
     providerEditor.reset(new ProviderEditorWidget());
     connect(ui->addProviderBtn, &QPushButton::clicked,
-            this, &MainWindow::openProviderEditor);
+            this, &MainWindow::newProviderEditor);
     connect(providerEditor.get(), &ProviderEditorWidget::providerEditFinish,
             this, &MainWindow::checkProvider);
 
@@ -173,7 +173,7 @@ void MainWindow::receiveProxyListError(QString providerUuid, const QString &msg)
     QMessageBox::warning(this, "Update proxy error", msg);
 }
 
-void MainWindow::openProviderEditor() {
+void MainWindow::newProviderEditor() {
     providerEditor->setProvider({});
     providerEditor->show();
 }
@@ -336,7 +336,7 @@ void MainWindow::menuOpenProviderEditor() {
     });
     if (providerIt != this->providerList.end()) {
         this->providerEditor->setProvider((*providerIt)->getProviderData());
-        openProviderEditor();
+        providerEditor->show();
     }
 }
 
