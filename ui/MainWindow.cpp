@@ -170,7 +170,6 @@ void MainWindow::receivedProviderProxyList(const QString &providerUuid, const QL
 
 void MainWindow::receiveProxyListError(QString providerUuid, const QString &msg) {
     log(msg, LOG::ERROR);
-    QMessageBox::warning(this, "Update proxy error", msg);
 }
 
 void MainWindow::newProviderEditor() {
