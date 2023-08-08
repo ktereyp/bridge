@@ -154,16 +154,36 @@ void MainWindow::receivedProviderProxyList(const QString &providerUuid, const QL
         rootItem->setData(0, ROLE_PROVIDER_UUID, providerUuid);
         ui->proxyList->addTopLevelItem(rootItem);
     }
+    // last used proxy
+    Proxy lastUsedProxy;
     // remove children
     for (auto i = rootItem->childCount() - 1; i >= 0; i--) {
-        rootItem->removeChild(rootItem->child(i));
+        auto item = rootItem->child(i);
+        if (item->data(0, ROLE_CONNECTED).toBool()) {
+            lastUsedProxy = item->data(0, Qt::UserRole).value<Proxy>();
+        }
+        rootItem->removeChild(item);
     }
 
-    for (auto &proxy: list) {
+    QTreeWidgetItem *matchedItem = nullptr;
+    for (auto proxy: list) {
         auto item = new QTreeWidgetItem();
         item->setText(0, proxy.name);
         item->setData(0, ROLE_PROXY_DATA, QVariant::fromValue(proxy));
         rootItem->addChild(item);
+        if (proxy.name == lastUsedProxy.name) {
+            matchedItem = item;
+        }
+    }
+    if (matchedItem) {
+        auto matchedProxy = matchedItem->data(0, Qt::UserRole).value<Proxy>();
+        if (lastUsedProxy.toClashProxy("") == matchedProxy.toClashProxy("")) {
+            matchedItem->setIcon(0, QIcon(":/assets/green_check.jpg"));
+            matchedItem->setData(0, ROLE_CONNECTED, true);
+            matchedItem->setData(0, ROLE_CONNECTING, false);
+        } else {
+            doConnect(matchedItem);
+        }
     }
     rootItem->setExpanded(true);
 }
