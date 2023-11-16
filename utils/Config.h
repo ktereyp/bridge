@@ -14,7 +14,7 @@ public:
     QString encodeType;
 };
 
-struct ClashConfigData {
+struct ProxyCmdConfigData {
     QString binaryPath = {};
     ushort listenPort = 8888;
     ushort controllerPort = 9090;
@@ -30,17 +30,17 @@ class Config {
 public:
     static const QString KEY_PROVIDER;
     static const QString KEY_PROXY;
-    static const QString KEY_CLASH_BINARY;
-    static const QString KEY_CLASH_LISTEN_PORT;
-    static const QString KEY_CLASH_CONTROLLER_PORT;
-    static const QString KEY_CLASH_SOCKS_PORT;
-    static const QString KEY_CLASH_ALLOW_LAN;
-    static const QString KEY_CLASH_BIND_ADDRESS;
-    static const QString KEY_CLASH_LOG_LEVEL;
+    static const QString KEY_PROXY_CMD_BINARY;
+    static const QString KEY_PROXY_CMD_LISTEN_PORT;
+    static const QString KEY_PROXY_CMD_CONTROLLER_PORT;
+    static const QString KEY_PROXY_CMD_SOCKS_PORT;
+    static const QString KEY_PROXY_CMD_ALLOW_LAN;
+    static const QString KEY_PROXY_CMD_BIND_ADDRESS;
+    static const QString KEY_PROXY_CMD_LOG_LEVEL;
 
 
 public:
-    static QString configDir();
+    static QString appConfigDir();
 
     static QList<ProviderData> getProviders();
 
@@ -52,9 +52,9 @@ public:
 
     static QList<Proxy> getProxies();
 
-    static ClashConfigData getClashConfig();
+    static ProxyCmdConfigData getProxyCmdConfig();
 
-    static void setClashConfig(ClashConfigData &config);
+    static void setClashConfig(ProxyCmdConfigData &config);
 
     static QString get(const QString &key);
 
@@ -72,7 +72,7 @@ public:
 
     static QString getProviderCacheFile(const QString &providerName);
 
-    static QString getClashYamlPath();
+    static QString getProxyConfigFilePath();
 
 private:
     static QString configFile();

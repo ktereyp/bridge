@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Bridge
 Type=Application
-Comment=Gui for clash
+Comment=Gui for proxy
 Exec=bridge
 TryExec=bridge
 Icon=bridge

@@ -92,11 +92,9 @@ bool Provider::processData(const QString &data) {
     auto list = str.split("\n");
     QList<Proxy> out;
     for (auto &i: list) {
-        if (this->providerData.proxyType == ProxyType::Trojan) {
-            auto proxy = Proxy::trojan(i);
-            if (proxy.isValid() > 0) {
-                out.append(proxy);
-            }
+        auto proxy = Proxy::parse(i);
+        if (proxy.isValid() > 0) {
+            out.append(proxy);
         }
     }
     emit proxyList(this->providerData.uuid, out);

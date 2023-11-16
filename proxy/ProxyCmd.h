@@ -1,5 +1,5 @@
-#ifndef BRIDGE_CLASH_H
-#define BRIDGE_CLASH_H
+#ifndef BRIDGE_PROXYCMD_H
+#define BRIDGE_PROXYCMD_H
 
 #include <QObject>
 #include <QScopedPointer>
@@ -9,12 +9,12 @@
 #include "../utils/Config.h"
 
 class IpInfo;
-class ClashConfigData;
+class ProxyCmdConfigData;
 
-class Clash : public QObject {
+class ProxyCmd : public QObject {
 Q_OBJECT
 public:
-    explicit Clash(QObject *parent = nullptr);
+    explicit ProxyCmd(QObject *parent = nullptr);
 
     bool setProxy(Proxy proxy, Proxy lastRelay);
 
@@ -26,15 +26,15 @@ public:
 
 Q_SIGNALS:
 
-    void clashStdout(const QString &msg);
+    void cmdStdout(const QString &msg);
 
-    void clashStderr(const QString &msg);
+    void cmdStderr(const QString &msg);
 
     void started();
 
     void finished(int exitCode, QProcess::ExitStatus exitStatus);
 
-    void clashSpeed(int up, int down);
+    void cmdNetworkSpeed(qint64 up, qint64 down);
 
     void ipInfoUpdate(const IpInfo &info, const QString &msg);
 
@@ -57,13 +57,13 @@ private slots:
 private:
     QScopedPointer<QProcess> process;
 
-    QString clashConfigFile;
+    QString cmdConfigFile;
     Proxy proxy;
-    ClashConfigData clashConfigData;
+    ProxyCmdConfigData cmdConfigData;
     bool needRestart = {};
 
     QNetworkAccessManager networkAccessManager;
 };
 
 
-#endif //BRIDGE_CLASH_H
+#endif //BRIDGE_PROXYCMD_H

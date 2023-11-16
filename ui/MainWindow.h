@@ -20,7 +20,7 @@ class NewProxyWidget;
 
 class SettingsWidget;
 
-class Clash;
+class ProxyCmd;
 
 class QTreeWidgetItem;
 
@@ -69,15 +69,15 @@ private slots:
 
     void receiveProxyListError(QString providerUuid, const QString &msg);
 
-    void clashStart();
+    void proxyCmdStart();
 
-    void clashFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    void proxyCmdFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
-    void clashStdout(const QString &msg);
+    void proxyCmdStdout(const QString &msg);
 
-    void clashStderr(const QString &msg);
+    void proxyCmdStderr(const QString &msg);
 
-    void clashSpeed(int up, int down);
+    void proxyCmdNetworkTraffic(qint64 up, qint64 down);
 
     void iconActivated(QSystemTrayIcon::ActivationReason reason);
 
@@ -102,7 +102,14 @@ private:
     void editProxy(Proxy p);
 
     void log(const QString &msg, LOG level = LOG::INFO);
-
+private:
+    struct Traffic {
+        qint64 uplink;
+        qint64 downlink;
+        qint64 lastTime;
+        qint64 uplinkRatio;
+        qint64 downlinkRatio;
+    };
 private:
     Ui::MainWindow *ui;
     QSystemTrayIcon *trayIcon;
@@ -111,8 +118,9 @@ private:
     QScopedPointer<ProviderEditorWidget> providerEditor;
     QScopedPointer<NewProxyWidget> newProxyWidget;
     QScopedPointer<SettingsWidget> settingsWidget;
-    QScopedPointer<Clash> clash;
+    QScopedPointer<ProxyCmd> proxyCmd;
     IpInfo ipInfo = {};
+    Traffic traffic = {};
 };
 
 

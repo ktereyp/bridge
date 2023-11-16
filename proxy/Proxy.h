@@ -15,6 +15,7 @@ enum ProxyType {
     Http,
     Socks5,
     Vmess,
+    Vless,
     Snell,
 };
 
@@ -139,9 +140,55 @@ public:
     }
 };
 
+class ProxyVless {
+public:
+    QString server;
+    QString port;
+    QString password;
+    QString encryption;
+    QString flow;
+    QString network;
+    QString security;
+    QString realityFingerprint;
+    QString realityServerName;
+    QString realityPublicKey;
+
+    QJsonObject toJson() {
+        QJsonObject json;
+        json["server"] = this->server;
+        json["port"] = this->port;
+        json["password"] = this->password;
+        json["encryption"] = this->encryption;
+        json["flow"] = this->flow;
+        json["network"] = this->network;
+        json["security"] = this->security;
+        json["realityFingerprint"] = this->realityFingerprint;
+        json["realityServerName"] = this->realityServerName;
+        json["realityPublicKey"] = this->realityPublicKey;
+        return json;
+    }
+
+    static ProxyVless from(const QJsonObject &json) {
+        ProxyVless p;
+        p.server = json["server"].toString();
+        p.port = json["port"].toString();
+        p.password = json["password"].toString();
+        p.encryption = json["encryption"].toString();
+        p.flow = json["flow"].toString();
+        p.network = json["network"].toString();
+        p.security = json["security"].toString();
+        p.realityFingerprint = json["realityFingerprint"].toString();
+        p.realityServerName = json["realityServerName"].toString();
+        p.realityPublicKey = json["realityPublicKey"].toString();
+        return p;
+    }
+};
+
 class Proxy {
 public:
+    static Proxy parse(QString input);
     static Proxy trojan(QString input);
+    static Proxy vless(QString input);
 
     static Proxy from(const QByteArray &data);
 
@@ -153,6 +200,8 @@ public:
 
     QString toClashProxy(const QString &name);
 
+    QJsonObject toV2rayProxy(const QString &tag);
+
     QByteArray toJson();
 
 public:
@@ -163,6 +212,7 @@ public:
 
     ProxyShadowSocks shadowSocksData;
     ProxyTrojan trojanData;
+    ProxyVless vlessData;
 };
 
 Q_DECLARE_METATYPE(Proxy);

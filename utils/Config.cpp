@@ -10,17 +10,17 @@
 
 const QString Config::KEY_PROVIDER = "providers";
 const QString Config::KEY_PROXY = "proxies";
-const QString Config::KEY_CLASH_BINARY = "clash-binary";
-const QString Config::KEY_CLASH_LISTEN_PORT = "clash-listen-port";
-const QString Config::KEY_CLASH_CONTROLLER_PORT = "clash-controller-port";
-const QString Config::KEY_CLASH_SOCKS_PORT = "clash-socks-port";
-const QString Config::KEY_CLASH_ALLOW_LAN = "clash-allow-lan";
-const QString Config::KEY_CLASH_BIND_ADDRESS = "clash-bind-address";
-const QString Config::KEY_CLASH_LOG_LEVEL = "clash-log-level";
+const QString Config::KEY_PROXY_CMD_BINARY = "clash-binary";
+const QString Config::KEY_PROXY_CMD_LISTEN_PORT = "clash-listen-port";
+const QString Config::KEY_PROXY_CMD_CONTROLLER_PORT = "clash-controller-port";
+const QString Config::KEY_PROXY_CMD_SOCKS_PORT = "clash-socks-port";
+const QString Config::KEY_PROXY_CMD_ALLOW_LAN = "clash-allow-lan";
+const QString Config::KEY_PROXY_CMD_BIND_ADDRESS = "clash-bind-address";
+const QString Config::KEY_PROXY_CMD_LOG_LEVEL = "clash-log-level";
 
 QString Config::preferConfigDir = "";
 
-QString Config::configDir() {
+QString Config::appConfigDir() {
     if (preferConfigDir.length() > 0) {
         return preferConfigDir;
     }
@@ -170,9 +170,9 @@ QList<Proxy> Config::getProxies() {
     return list;
 }
 
-ClashConfigData Config::getClashConfig() {
-    ClashConfigData cfg;
-    cfg.binaryPath = get(KEY_CLASH_BINARY);
+ProxyCmdConfigData Config::getProxyCmdConfig() {
+    ProxyCmdConfigData cfg;
+    cfg.binaryPath = get(KEY_PROXY_CMD_BINARY);
     auto setPort = [](ushort *port, const QString &key) {
         bool ok;
         auto v = get(key).toUShort(&ok);
@@ -180,28 +180,29 @@ ClashConfigData Config::getClashConfig() {
             *port = v;
         }
     };
-    setPort(&cfg.listenPort, KEY_CLASH_LISTEN_PORT);
-    setPort(&cfg.controllerPort, KEY_CLASH_CONTROLLER_PORT);
-    setPort(&cfg.socksPort, KEY_CLASH_SOCKS_PORT);
-    cfg.allowLan = get(KEY_CLASH_ALLOW_LAN).toInt();
-    auto bindAddress = get(KEY_CLASH_BIND_ADDRESS);
+    setPort(&cfg.listenPort, KEY_PROXY_CMD_LISTEN_PORT);
+    setPort(&cfg.controllerPort, KEY_PROXY_CMD_CONTROLLER_PORT);
+    setPort(&cfg.socksPort, KEY_PROXY_CMD_SOCKS_PORT);
+    cfg.allowLan = get(KEY_PROXY_CMD_ALLOW_LAN).toInt();
+    auto bindAddress = get(KEY_PROXY_CMD_BIND_ADDRESS);
     if (bindAddress.isEmpty()) {
         bindAddress = "*";
     }
     cfg.bindAddress = bindAddress;
-    cfg.logLevel = get(KEY_CLASH_LOG_LEVEL);
+    cfg.logLevel = get(KEY_PROXY_CMD_LOG_LEVEL);
 
     return cfg;
 }
 
-void Config::setClashConfig(ClashConfigData &cfg) {
+void Config::setClashConfig(ProxyCmdConfigData &cfg) {
     set({
-                {KEY_CLASH_LISTEN_PORT,     QString::number(cfg.listenPort)},
-                {KEY_CLASH_CONTROLLER_PORT, QString::number(cfg.controllerPort)},
-                {KEY_CLASH_SOCKS_PORT,      QString::number(cfg.socksPort)},
-                {KEY_CLASH_ALLOW_LAN,       QString::number(cfg.allowLan)},
-                {KEY_CLASH_BIND_ADDRESS,    cfg.bindAddress},
-                {KEY_CLASH_LOG_LEVEL,       cfg.logLevel},
+                {KEY_PROXY_CMD_BINARY,          cfg.binaryPath},
+                {KEY_PROXY_CMD_LISTEN_PORT,     QString::number(cfg.listenPort)},
+                {KEY_PROXY_CMD_CONTROLLER_PORT, QString::number(cfg.controllerPort)},
+                {KEY_PROXY_CMD_SOCKS_PORT,      QString::number(cfg.socksPort)},
+                {KEY_PROXY_CMD_ALLOW_LAN,       QString::number(cfg.allowLan)},
+                {KEY_PROXY_CMD_BIND_ADDRESS,    cfg.bindAddress},
+                {KEY_PROXY_CMD_LOG_LEVEL,       cfg.logLevel},
         });
 }
 
@@ -234,11 +235,11 @@ void Config::set(const QString &group, const QString &key, const QString &value)
 }
 
 QString Config::configFile() {
-    return configDir() + "/" + "bridge.ini";
+    return appConfigDir() + "/" + "bridge.ini";
 }
 
 void Config::prepareConfigDir() {
-    QDir dir(configDir());
+    QDir dir(appConfigDir());
     if (!dir.exists()) {
         dir.mkdir(".");
     }
@@ -249,20 +250,20 @@ void Config::setConfigDir(const QString &dir) {
 }
 
 QString Config::getProviderCacheFile(const QString &providerName) {
-    return Config::configDir() + "/" + providerName + ".json";
+    return Config::appConfigDir() + "/" + providerName + ".json";
 }
 
-QString Config::getClashYamlPath() {
+QString Config::getProxyConfigFilePath() {
     prepareConfigDir();
-    auto clashConfigDir = configDir() + "/" + "generated";
+    auto proxyCmdConfigDir = appConfigDir() + "/" + "generated";
 
-    QDir dir(clashConfigDir);
+    QDir dir(proxyCmdConfigDir);
     if (!dir.exists()) {
-        if (!dir.mkpath(clashConfigDir)) {
-            qCritical() << "cannot create dir " << clashConfigDir;
+        if (!dir.mkpath(proxyCmdConfigDir)) {
+            qCritical() << "cannot create dir " << proxyCmdConfigDir;
         }
     }
-    return clashConfigDir + "/" + "clash.yaml";
+    return proxyCmdConfigDir + "/" + "config.json";
 }
 
 void Config::deleteProvider(const QString &providerUuid) {

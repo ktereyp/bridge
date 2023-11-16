@@ -5,7 +5,7 @@
 
 class Readable {
 public:
-    static QString bytes(int d);
+    static QString bytes(qint64 d);
 };
 
 #endif //BRIDGE_READABLE_H

@@ -1,6 +1,6 @@
 #include "Readable.h"
 
-QString Readable::bytes(int d) {
+QString Readable::bytes(qint64 d) {
     const int _kb = 1024;
     const int _mb = _kb * 1024;
     const int _gb = _mb * 1024;

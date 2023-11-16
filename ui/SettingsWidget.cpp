@@ -10,7 +10,7 @@ SettingsWidget::SettingsWidget(QWidget *parent) :
         QWidget(parent), ui(new Ui::SettingsWidget) {
     ui->setupUi(this);
 
-    auto clashConfig = Config::getClashConfig();
+    auto clashConfig = Config::getProxyCmdConfig();
     ui->clashBinaryFileInput->setText(clashConfig.binaryPath);
     ui->clashVerifyBtn->setEnabled(!clashConfig.binaryPath.isEmpty());
     ui->clashListenPortInput->setText(QString::number(clashConfig.listenPort));
@@ -45,23 +45,26 @@ void SettingsWidget::verifyClashBinary() {
     auto p = new QProcess(this);
     connect(p, qOverload<int, QProcess::ExitStatus>(&QProcess::finished),
             [p, this](int exitCode, QProcess::ExitStatus) {
-                auto msg = p->readAll();
                 if (exitCode != 0) {
-                    QMessageBox::warning(this, "Invalid clash", QString(msg));
-                } else if (msg.contains("Clash")) {
-                    QMessageBox::information(this, "Clash", msg);
-                } else {
-                    QMessageBox::warning(this, "Invalid clash", QString(msg));
+                    auto msg = p->readAllStandardError();
+                    qDebug() << msg;
+                    QMessageBox::warning(this, "Invalid Xray", QString(msg));
                 }
+                auto msg = p->readAllStandardOutput();
                 qDebug() << msg;
+                if (msg.contains("Xray")) {
+                    QMessageBox::information(this, "Xray", msg);
+                } else {
+                    QMessageBox::warning(this, "Invalid Xray", QString(msg));
+                }
                 p->deleteLater();
             });
-    QStringList args{"-v"};
+    QStringList args{"version"};
     p->start(file, args);
 }
 
 void SettingsWidget::saveConfig() {
-    auto clashConfig = Config::getClashConfig();
+    auto clashConfig = Config::getProxyCmdConfig();
 
     auto clashBinaryFile = ui->clashBinaryFileInput->text();
     if (clashBinaryFile.isEmpty()) {

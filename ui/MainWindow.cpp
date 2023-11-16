@@ -9,7 +9,7 @@
 #include "../utils/Config.h"
 #include "ProviderEditorWidget.h"
 #include "NewProxyWidget.h"
-#include "../proxy/Clash.h"
+#include "../proxy/ProxyCmd.h"
 #include <QMessageBox>
 #include "../utils/Readable.h"
 #include "SettingsWidget.h"
@@ -24,6 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     ui->logView->setLineWrapMode(QPlainTextEdit::LineWrapMode::NoWrap);
     ui->logView->setReadOnly(true);
+    ui->logView->setMaximumBlockCount(1000);
     setWindowTitle("bridge");
     ui->splitter->setStretchFactor(0, 1);
     ui->splitter->setStretchFactor(1, 2);
@@ -53,19 +54,19 @@ MainWindow::MainWindow(QWidget *parent) :
     // add new proxy
     connect(ui->addNewProxyBtn, &QPushButton::clicked,
             this, &MainWindow::addNewProxy);
-    // clash
-    this->clash.reset(new Clash);
-    connect(this->clash.get(), &Clash::clashStdout,
-            this, &MainWindow::clashStdout);
-    connect(this->clash.get(), &Clash::clashStderr,
-            this, &MainWindow::clashStderr);
-    connect(this->clash.get(), &Clash::started,
-            this, &MainWindow::clashStart);
-    connect(this->clash.get(), &Clash::finished,
-            this, &MainWindow::clashFinished);
-    connect(this->clash.get(), &Clash::clashSpeed,
-            this, &MainWindow::clashSpeed);
-    connect(this->clash.get(), &Clash::ipInfoUpdate,
+    // proxy cmd
+    this->proxyCmd.reset(new ProxyCmd);
+    connect(this->proxyCmd.get(), &ProxyCmd::cmdStdout,
+            this, &MainWindow::proxyCmdStdout);
+    connect(this->proxyCmd.get(), &ProxyCmd::cmdStderr,
+            this, &MainWindow::proxyCmdStderr);
+    connect(this->proxyCmd.get(), &ProxyCmd::started,
+            this, &MainWindow::proxyCmdStart);
+    connect(this->proxyCmd.get(), &ProxyCmd::finished,
+            this, &MainWindow::proxyCmdFinished);
+    connect(this->proxyCmd.get(), &ProxyCmd::cmdNetworkSpeed,
+            this, &MainWindow::proxyCmdNetworkTraffic);
+    connect(this->proxyCmd.get(), &ProxyCmd::ipInfoUpdate,
             this, &MainWindow::receiveMyIpInfo);
 
 
@@ -177,7 +178,8 @@ void MainWindow::receivedProviderProxyList(const QString &providerUuid, const QL
     }
     if (matchedItem) {
         auto matchedProxy = matchedItem->data(0, Qt::UserRole).value<Proxy>();
-        if (lastUsedProxy.toClashProxy("") == matchedProxy.toClashProxy("")) {
+        // FIXME
+        if (lastUsedProxy.toV2rayProxy("") == matchedProxy.toV2rayProxy("")) {
             matchedItem->setIcon(0, QIcon(":/assets/green_check.jpg"));
             matchedItem->setData(0, ROLE_CONNECTED, true);
             matchedItem->setData(0, ROLE_CONNECTING, false);
@@ -409,18 +411,18 @@ void MainWindow::doConnect(QTreeWidgetItem *item) {
         }
     }
 
-    if (!this->clash->setProxy(proxy, lastRelay)) {
+    if (!this->proxyCmd->setProxy(proxy, lastRelay)) {
         qDebug() << "cannot set proxy";
         return;
     }
     item->setData(0, ROLE_CONNECTING, true);
-    this->clash->run();
+    this->proxyCmd->run();
 }
 
-void MainWindow::clashStart() {
+void MainWindow::proxyCmdStart() {
     QString msg = "<span style=\"color:green;white-space:pre\">"
                   +
-                  QString("clash is running")
+                  QString("proxy cmd is running")
                   +
                   "</span>";
     log(msg);
@@ -442,22 +444,24 @@ void MainWindow::clashStart() {
     }
 }
 
-void MainWindow::clashFinished(int exitCode, QProcess::ExitStatus exitStatus) {
+void MainWindow::proxyCmdFinished(int exitCode, QProcess::ExitStatus exitStatus) {
     if (exitStatus == QProcess::ExitStatus::CrashExit) {
         QString msg = "<span style=\"color:red;white-space:pre\">"
                       +
-                      QString("clash crashed: exit code: %1").arg(exitCode)
+                      QString("proxy cmd exited: exit code: %1").arg(exitCode)
                       +
                       "</span>";
-        clashStderr(msg);
+        proxyCmdStderr(msg);
     } else {
         QString msg = "<span style=\"color:red;white-space:pre\">"
                       +
-                      QString("clash exited: exit code: %1").arg(exitCode)
+                      QString("proxy cmd exited: exit code: %1").arg(exitCode)
                       +
                       "</span>";
-        clashStderr(msg);
+        proxyCmdStderr(msg);
     }
+    this->ipInfo.ip = "Unknown";
+    this->ipInfo.city = "Unknown";
 
     auto topLevelItemCount = ui->proxyList->topLevelItemCount();
     for (auto i = 0; i < topLevelItemCount; i++) {
@@ -472,18 +476,27 @@ void MainWindow::clashFinished(int exitCode, QProcess::ExitStatus exitStatus) {
     }
 }
 
-void MainWindow::clashStdout(const QString &msg) {
+void MainWindow::proxyCmdStdout(const QString &msg) {
     this->ui->logView->appendHtml(msg);
 }
 
-void MainWindow::clashStderr(const QString &msg) {
+void MainWindow::proxyCmdStderr(const QString &msg) {
     this->ui->logView->appendHtml(msg);
 }
 
-void MainWindow::clashSpeed(int up, int down) {
-    auto upSpeed = QString("%1 ↑").arg(Readable::bytes(up));
-    auto downSpeed = QString("%2 ↓").arg(Readable::bytes(down));
+void MainWindow::proxyCmdNetworkTraffic(qint64 up, qint64 down) {
+    auto now = QDateTime::currentSecsSinceEpoch();
+    auto interval = now - traffic.lastTime;
+    if (interval > 0) {
+        traffic.uplinkRatio = (up - traffic.uplink) / interval;
+        traffic.downlinkRatio = (down - traffic.downlink) / interval;
+    }
+    traffic.uplink = up;
+    traffic.downlink = down;
+    traffic.lastTime = now;
 
+    auto upSpeed = QString("%1 ↑").arg(Readable::bytes(traffic.uplinkRatio));
+    auto downSpeed = QString("%2 ↓").arg(Readable::bytes(traffic.downlinkRatio));
     if (this->ipInfo.ip.isEmpty()) {
         ui->statusbar->showMessage(upSpeed + " " + downSpeed);
     } else {
@@ -540,7 +553,7 @@ void MainWindow::log(const QString &msg, LOG level) {
                     msg
                     +
                     "</span>";
-        clashStderr(msg);
+        proxyCmdStderr(msg);
         ui->logView->appendHtml(m);
     } else {
         ui->logView->appendHtml(msg);
