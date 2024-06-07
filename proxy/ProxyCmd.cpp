@@ -88,7 +88,10 @@ bool ProxyCmd::setProxy(Proxy proxy, Proxy lastRelay) {
     {
         QStringList directDomain = {"geosite:cn"};
         for (auto &domain: proxyCmdConfig.bypassDomains) {
-            directDomain.append(domain.trimmed());
+            auto trimmed = domain.trimmed();
+            if (trimmed.size()) {
+                directDomain.append(domain.trimmed());
+            }
         }
         QJsonArray rules;
         rules.push_back(QJsonObject::fromVariantMap({
