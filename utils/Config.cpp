@@ -17,6 +17,7 @@ const QString Config::KEY_PROXY_CMD_SOCKS_PORT = "clash-socks-port";
 const QString Config::KEY_PROXY_CMD_ALLOW_LAN = "clash-allow-lan";
 const QString Config::KEY_PROXY_CMD_BIND_ADDRESS = "clash-bind-address";
 const QString Config::KEY_PROXY_CMD_LOG_LEVEL = "clash-log-level";
+const QString Config::KEY_PROXY_CMD_BYPASS_DOMAIN = "clash-bypass-domain";
 
 QString Config::preferConfigDir = "";
 
@@ -190,6 +191,7 @@ ProxyCmdConfigData Config::getProxyCmdConfig() {
     }
     cfg.bindAddress = bindAddress;
     cfg.logLevel = get(KEY_PROXY_CMD_LOG_LEVEL);
+    cfg.bypassDomains = get(KEY_PROXY_CMD_BYPASS_DOMAIN).split(",");
 
     return cfg;
 }
@@ -203,6 +205,7 @@ void Config::setClashConfig(ProxyCmdConfigData &cfg) {
                 {KEY_PROXY_CMD_ALLOW_LAN,       QString::number(cfg.allowLan)},
                 {KEY_PROXY_CMD_BIND_ADDRESS,    cfg.bindAddress},
                 {KEY_PROXY_CMD_LOG_LEVEL,       cfg.logLevel},
+                {KEY_PROXY_CMD_BYPASS_DOMAIN,   cfg.bypassDomains.join(",")},
         });
 }
 

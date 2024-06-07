@@ -22,6 +22,7 @@ struct ProxyCmdConfigData {
     bool allowLan = true;
     QString bindAddress = "*";
     QString logLevel = "info";
+    QList<QString> bypassDomains = {};
 };
 
 class Proxy;
@@ -37,6 +38,7 @@ public:
     static const QString KEY_PROXY_CMD_ALLOW_LAN;
     static const QString KEY_PROXY_CMD_BIND_ADDRESS;
     static const QString KEY_PROXY_CMD_LOG_LEVEL;
+    static const QString KEY_PROXY_CMD_BYPASS_DOMAIN;
 
 
 public:

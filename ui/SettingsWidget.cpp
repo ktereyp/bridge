@@ -21,6 +21,9 @@ SettingsWidget::SettingsWidget(QWidget *parent) :
         ui->allowLanInput->setCheckState(Qt::CheckState::Checked);
     }
     ui->logLevelInput->setCurrentText(clashConfig.logLevel);
+    for (const auto &domain: clashConfig.bypassDomains) {
+        ui->bypassDomainInput->appendPlainText(domain);
+    }
 
     connect(ui->choseFileBtn, &QPushButton::clicked,
             this, &SettingsWidget::chooseFile);
@@ -104,6 +107,7 @@ void SettingsWidget::saveConfig() {
     }
     clashConfig.allowLan = ui->allowLanInput->isChecked();
     clashConfig.logLevel = ui->logLevelInput->currentText();
+    clashConfig.bypassDomains = ui->bypassDomainInput->toPlainText().split("\n");
     Config::setClashConfig(clashConfig);
 
     close();

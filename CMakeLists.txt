@@ -21,7 +21,6 @@ add_library(v2ray_stats ${PROTO_FILES})
 target_link_libraries(v2ray_stats
     PUBLIC
         protobuf::libprotobuf
-        gRPC::grpc
         gRPC::grpc++
 )
 target_include_directories(v2ray_stats PUBLIC ${CMAKE_CURRENT_BINARY_DIR})

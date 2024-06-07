@@ -86,6 +86,10 @@ bool ProxyCmd::setProxy(Proxy proxy, Proxy lastRelay) {
     }
     // routing
     {
+        QStringList directDomain = {"geosite:cn"};
+        for (auto &domain: proxyCmdConfig.bypassDomains) {
+            directDomain.append(domain.trimmed());
+        }
         QJsonArray rules;
         rules.push_back(QJsonObject::fromVariantMap({
                                                             {"type",        "field"},
@@ -95,7 +99,7 @@ bool ProxyCmd::setProxy(Proxy proxy, Proxy lastRelay) {
         rules.push_back(QJsonObject::fromVariantMap({
                                                             {"type",        "field"},
                                                             {"outboundTag", "direct"},
-                                                            {"domain",      QJsonArray::fromStringList({"geosite:cn"})},
+                                                            {"domain",      QJsonArray::fromStringList(directDomain)},
                                                     }));
         rules.push_back(QJsonObject::fromVariantMap({
                                                             {"type",        "field"},
