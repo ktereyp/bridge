@@ -110,7 +110,8 @@ Proxy Proxy::from(const QByteArray &data) {
     p.proxyType = static_cast<ProxyType>(json["proxyType"].toInt());
     p.name = json["name"].toString();
     p.lastRelay = json["lastRelay"].toBool();
-    p.shadowSocksData = ProxyShadowSocks::from(json["shadowSocksData"].toObject());
+    p.shadowSocksData =
+        ProxyShadowSocks::from(json["shadowSocksData"].toObject());
     p.trojanData = ProxyTrojan::from(json["trojanData"].toObject());
     return p;
 }
@@ -132,51 +133,52 @@ QString Proxy::info() const {
         msg += " - " + trojanData.server;
     } else if (proxyType == ProxyType::ShadowSocks) {
         msg += " - " + shadowSocksData.server;
+    } else if (proxyType == ProxyType::Vless) {
+        msg += " - " + vlessData.server;
     }
     return msg;
 }
 
 QString Proxy::toClashProxy(const QString &name) {
     if (proxyType == ProxyType::Trojan) {
-        auto cfg = QString(
-                "  - name: \"%1\"\n"
-                "    type: trojan\n"
-                "    server: %2\n"
-                "    port: %3\n"
-                "    password: %4\n"
-                "    sni: %5\n"
-                "    skip-cert-verify: %6\n"
-                "    udp: %7\n"
-        ).arg(name, trojanData.server, trojanData.port, trojanData.password, trojanData.sni)
-                .arg(trojanData.skipCertVerify)
-                .arg(trojanData.udp);
+        auto cfg = QString("  - name: \"%1\"\n"
+                           "    type: trojan\n"
+                           "    server: %2\n"
+                           "    port: %3\n"
+                           "    password: %4\n"
+                           "    sni: %5\n"
+                           "    skip-cert-verify: %6\n"
+                           "    udp: %7\n")
+                       .arg(name, trojanData.server, trojanData.port,
+                            trojanData.password, trojanData.sni)
+                       .arg(trojanData.skipCertVerify)
+                       .arg(trojanData.udp);
         if (!trojanData.network.isEmpty()) {
             cfg += QString(""
-                           "    network: %1\n"
-            ).arg(trojanData.network);
+                           "    network: %1\n")
+                       .arg(trojanData.network);
             if (trojanData.network == "grpc") {
                 cfg += QString(""
                                "    grpc-opts:\n"
-                               "      grpc-service-name: \"%1\"\n"
-                ).arg(trojanData.grpcServiceName);
+                               "      grpc-service-name: \"%1\"\n")
+                           .arg(trojanData.grpcServiceName);
             }
             if (trojanData.network == "ws") {
                 cfg += QString(""
-                               "    ws-opts:\n"
-                ).arg(trojanData.grpcServiceName);
+                               "    ws-opts:\n")
+                           .arg(trojanData.grpcServiceName);
                 if (!trojanData.wsPath.isEmpty()) {
                     cfg += QString(""
-                                   "      path: \"%1\"\n"
-                    ).arg(trojanData.wsPath);
+                                   "      path: \"%1\"\n")
+                               .arg(trojanData.wsPath);
                 }
                 if (!trojanData.wsHeaders.isEmpty()) {
                     cfg += QString(""
-                                   "      headers:\n"
-                    );
-                    for (auto k: trojanData.wsHeaders.keys()) {
+                                   "      headers:\n");
+                    for (auto k : trojanData.wsHeaders.keys()) {
                         cfg += QString(""
-                                       "        %1: %2\n"
-                        ).arg(k, trojanData.wsHeaders[k]);
+                                       "        %1: %2\n")
+                                   .arg(k, trojanData.wsHeaders[k]);
                     }
                 }
             }
@@ -185,63 +187,62 @@ QString Proxy::toClashProxy(const QString &name) {
     }
 
     if (proxyType == ProxyType::ShadowSocks) {
-        auto cfg = QString(
-                "  - name: \"%1\"\n"
-                "    type: ss\n"
-                "    server: %2\n"
-                "    port: %3\n"
-                "    password: %4\n"
-                "    cipher: %5\n"
-                "    udp: %6\n"
-        ).arg(name, shadowSocksData.server, shadowSocksData.port, shadowSocksData.password, shadowSocksData.cipher)
-                .arg(trojanData.udp);
+        auto cfg = QString("  - name: \"%1\"\n"
+                           "    type: ss\n"
+                           "    server: %2\n"
+                           "    port: %3\n"
+                           "    password: %4\n"
+                           "    cipher: %5\n"
+                           "    udp: %6\n")
+                       .arg(name, shadowSocksData.server, shadowSocksData.port,
+                            shadowSocksData.password, shadowSocksData.cipher)
+                       .arg(trojanData.udp);
         if (!shadowSocksData.plugin.isEmpty()) {
             cfg += QString(""
-                           "    plugin: %1\n"
-            ).arg(shadowSocksData.plugin);
+                           "    plugin: %1\n")
+                       .arg(shadowSocksData.plugin);
             if (shadowSocksData.plugin == "obfs") {
                 cfg += QString(""
                                "    plugin-opts:\n"
-                               "      mode: %1\n"
-                ).arg(shadowSocksData.pluginOptMode);
+                               "      mode: %1\n")
+                           .arg(shadowSocksData.pluginOptMode);
                 if (!shadowSocksData.pluginOptHost.isEmpty()) {
                     cfg += QString(""
-                                   "      host: %1\n"
-                    ).arg(shadowSocksData.pluginOptHost);
+                                   "      host: %1\n")
+                               .arg(shadowSocksData.pluginOptHost);
                 }
             }
             if (shadowSocksData.plugin == "v2ray-plugin") {
                 cfg += QString(""
                                "    plugin-opts:\n"
-                               "      mode: %1\n"
-                ).arg(shadowSocksData.pluginOptMode);
+                               "      mode: %1\n")
+                           .arg(shadowSocksData.pluginOptMode);
                 cfg += QString(""
-                               "      tls: %1\n"
-                ).arg(shadowSocksData.pluginOptTls);
+                               "      tls: %1\n")
+                           .arg(shadowSocksData.pluginOptTls);
                 cfg += QString(""
-                               "      skip-cert-verify: %2\n"
-                ).arg(shadowSocksData.pluginOptSkipCertVerify);
+                               "      skip-cert-verify: %2\n")
+                           .arg(shadowSocksData.pluginOptSkipCertVerify);
                 cfg += QString(""
-                               "      mux: %3\n"
-                ).arg(shadowSocksData.pluginOptMux);
+                               "      mux: %3\n")
+                           .arg(shadowSocksData.pluginOptMux);
                 if (!shadowSocksData.pluginOptHost.isEmpty()) {
                     cfg += QString(""
-                                   "      host: %1\n"
-                    ).arg(shadowSocksData.pluginOptHost);
+                                   "      host: %1\n")
+                               .arg(shadowSocksData.pluginOptHost);
                 }
                 if (!shadowSocksData.pluginOptPath.isEmpty()) {
                     cfg += QString(""
-                                   "      path: %1\n"
-                    ).arg(shadowSocksData.pluginOptPath);
+                                   "      path: %1\n")
+                               .arg(shadowSocksData.pluginOptPath);
                 }
                 if (!shadowSocksData.headers.isEmpty()) {
                     cfg += QString(""
-                                   "      headers:\n"
-                    );
-                    for (auto k: shadowSocksData.headers.keys()) {
+                                   "      headers:\n");
+                    for (auto k : shadowSocksData.headers.keys()) {
                         cfg += QString(""
-                                       "        %1: %2\n"
-                        ).arg(k, shadowSocksData.headers[k]);
+                                       "        %1: %2\n")
+                                   .arg(k, shadowSocksData.headers[k]);
                     }
                 }
             }
@@ -253,108 +254,72 @@ QString Proxy::toClashProxy(const QString &name) {
 
 QJsonObject Proxy::toV2rayProxy(const QString &tag) {
     if (proxyType == ProxyType::ShadowSocks) {
-        return QJsonObject::fromVariantMap(
-                {
-                        {"tag",      tag},
-                        {"protocol", "shadowsocks"},
-                        {
-                         "settings", QJsonObject::fromVariantMap(
-                                {
-                                        {"servers", QJsonArray::fromVariantList(
-                                                {
-                                                        QJsonObject::fromVariantMap(
-                                                                {
-                                                                        {"address",  shadowSocksData.server},
-                                                                        {"method",   shadowSocksData.cipher},
-                                                                        {"ota",      false},
-                                                                        {"password", shadowSocksData.password},
-                                                                        {"port",     shadowSocksData.port.toInt()}
-                                                                }
-                                                        )}
-                                        )},
-                                })
-                        },
-                }
-        );
+        return QJsonObject::fromVariantMap({
+            {"tag", tag},
+            {"protocol", "shadowsocks"},
+            {"settings",
+             QJsonObject::fromVariantMap({
+                 {"servers",
+                  QJsonArray::fromVariantList({QJsonObject::fromVariantMap(
+                      {{"address", shadowSocksData.server},
+                       {"method", shadowSocksData.cipher},
+                       {"ota", false},
+                       {"password", shadowSocksData.password},
+                       {"port", shadowSocksData.port.toInt()}})})},
+             })},
+        });
     }
     if (proxyType == ProxyType::Vless) {
         return QJsonObject::fromVariantMap(
-                {
-                        {"tag",            tag},
-                        {"protocol",       "vless"},
-                        {"settings",       QJsonObject::fromVariantMap(
-                                {
-                                        {"vnext", QJsonArray::fromVariantList(
-                                                {
-                                                        QJsonObject::fromVariantMap(
-                                                                {
-                                                                        {"address", vlessData.server},
-                                                                        {"port",    vlessData.port.toInt()},
-                                                                        {"users",   QJsonArray::fromVariantList(
-                                                                                {
-                                                                                        QJsonObject::fromVariantMap(
-                                                                                                {
-                                                                                                        {"id",         vlessData.password},
-                                                                                                        {"encryption", vlessData.encryption},
-                                                                                                        {"flow",       vlessData.flow}
-                                                                                                })
-                                                                                })
-                                                                        }
-                                                                }
-                                                        )}
-                                        )},
-                                })
-                        },
-                        {
-                         "streamSettings", QJsonObject::fromVariantMap(
-                                {
-                                        {"network",         "tcp"},
-                                        {"security",        "reality"},
-                                        {"realitySettings", QJsonObject::fromVariantMap(
-                                                {
-                                                        {"fingerprint", vlessData.realityFingerprint},
-                                                        {"serverName",  vlessData.realityServerName},
-                                                        {"publicKey",   vlessData.realityPublicKey},
-                                                })},
-                                })
-                        }
-                }
-        );
+            {{"tag", tag},
+             {"protocol", "vless"},
+             {"settings",
+              QJsonObject::fromVariantMap({
+                  {"vnext",
+                   QJsonArray::fromVariantList({QJsonObject::fromVariantMap(
+                       {{"address", vlessData.server},
+                        {"port", vlessData.port.toInt()},
+                        {"users", QJsonArray::fromVariantList(
+                                      {QJsonObject::fromVariantMap(
+                                          {{"id", vlessData.password},
+                                           {"encryption", vlessData.encryption},
+                                           {"flow", vlessData.flow}})})}})})},
+              })},
+             {"streamSettings",
+              QJsonObject::fromVariantMap({
+                  {"network", "tcp"},
+                  {"security", "reality"},
+                  {"realitySettings",
+                   QJsonObject::fromVariantMap({
+                       {"fingerprint", vlessData.realityFingerprint},
+                       {"serverName", vlessData.realityServerName},
+                       {"publicKey", vlessData.realityPublicKey},
+                   })},
+              })}});
     }
     if (proxyType == ProxyType::Trojan) {
         return QJsonObject::fromVariantMap(
-                {
-                        {"tag",            tag},
-                        {"protocol",       "trojan"},
-                        {"settings",       QJsonObject::fromVariantMap(
-                                {
-                                        {"servers", QJsonArray::fromVariantList(
-                                                {
-                                                        QJsonObject::fromVariantMap(
-                                                                {
-                                                                        {"address",  trojanData.server},
-                                                                        {"port",     trojanData.port.toInt()},
-                                                                        {"password", trojanData.password},
-                                                                }
-                                                        )}
-                                        )},
-                                })
-                        },
-                        {
-                         "streamSettings", QJsonObject::fromVariantMap(
-                                {
-                                        {"network",     "tcp"},
-                                        {"security",    "tls"},
-                                        {"tlsSettings", QJsonObject::fromVariantMap(
-                                                {
-                                                        {"serverName",           trojanData.sni},
-                                                        {"allowInsecureCiphers", true},
-                                                        {"allowInsecure",        true},
-                                                })},
-                                })
-                        }
-                }
-        );
+            {{"tag", tag},
+             {"protocol", "trojan"},
+             {"settings",
+              QJsonObject::fromVariantMap({
+                  {"servers",
+                   QJsonArray::fromVariantList({QJsonObject::fromVariantMap({
+                       {"address", trojanData.server},
+                       {"port", trojanData.port.toInt()},
+                       {"password", trojanData.password},
+                   })})},
+              })},
+             {"streamSettings",
+              QJsonObject::fromVariantMap({
+                  {"network", "tcp"},
+                  {"security", "tls"},
+                  {"tlsSettings", QJsonObject::fromVariantMap({
+                                      {"serverName", trojanData.sni},
+                                      {"allowInsecureCiphers", true},
+                                      {"allowInsecure", true},
+                                  })},
+              })}});
     }
     return {};
 }

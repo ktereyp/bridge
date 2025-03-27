@@ -2,25 +2,25 @@
 #include "ui_MainWindow.h"
 
 #include "../proxy/Provider.h"
-#include <QFile>
+#include "../proxy/ProxyCmd.h"
+#include "../utils/Config.h"
+#include "../utils/Readable.h"
+#include "NewProxyWidget.h"
+#include "ProviderEditorWidget.h"
+#include "SettingsWidget.h"
 #include <QDebug>
+#include <QFile>
+#include <QMessageBox>
 #include <QSettings>
 #include <utility>
-#include "../utils/Config.h"
-#include "ProviderEditorWidget.h"
-#include "NewProxyWidget.h"
-#include "../proxy/ProxyCmd.h"
-#include <QMessageBox>
-#include "../utils/Readable.h"
-#include "SettingsWidget.h"
 
 const int ROLE_PROXY_DATA = Qt::UserRole;
 const int ROLE_CONNECTING = Qt::UserRole + 1;
 const int ROLE_CONNECTED = Qt::UserRole + 2;
 const int ROLE_PROVIDER_UUID = Qt::UserRole + 3;
 
-MainWindow::MainWindow(QWidget *parent) :
-        QMainWindow(parent), ui(new Ui::MainWindow) {
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
     ui->logView->setLineWrapMode(QPlainTextEdit::LineWrapMode::NoWrap);
     ui->logView->setReadOnly(true);
@@ -31,7 +31,8 @@ MainWindow::MainWindow(QWidget *parent) :
     // trayIcon
     auto *trayMenu = new QMenu(this);
     auto *showMainWindow = new QAction("show", this);
-    connect(showMainWindow, &QAction::triggered, this, &MainWindow::showMainWindow);
+    connect(showMainWindow, &QAction::triggered, this,
+            &MainWindow::showMainWindow);
     auto *exitMainWindow = new QAction("exit", this);
     connect(exitMainWindow, &QAction::triggered, this, &MainWindow::shutdown);
     trayMenu->addAction(showMainWindow);
@@ -39,69 +40,65 @@ MainWindow::MainWindow(QWidget *parent) :
     this->trayIcon = new QSystemTrayIcon(QIcon(":/assets/bridge.png"), this);
     this->trayIcon->setContextMenu(trayMenu);
     this->trayIcon->show();
-    connect(this->trayIcon, &QSystemTrayIcon::activated,
-            this, &MainWindow::iconActivated);
+    connect(this->trayIcon, &QSystemTrayIcon::activated, this,
+            &MainWindow::iconActivated);
 
     // proxy list
     ui->proxyList->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->proxyList, &QTreeWidget::customContextMenuRequested,
-            this, &MainWindow::openProxyMenu);
-    connect(ui->proxyList, &QTreeWidget::itemDoubleClicked,
-            this, &MainWindow::proxyDoubleClicked);
-    connect(ui->proxyList, &QTreeWidget::itemClicked,
-            this, &MainWindow::proxyClicked);
+    connect(ui->proxyList, &QTreeWidget::customContextMenuRequested, this,
+            &MainWindow::openProxyMenu);
+    connect(ui->proxyList, &QTreeWidget::itemDoubleClicked, this,
+            &MainWindow::proxyDoubleClicked);
+    connect(ui->proxyList, &QTreeWidget::itemClicked, this,
+            &MainWindow::proxyClicked);
     ui->proxyList->setHeaderHidden(true);
     // add new proxy
-    connect(ui->addNewProxyBtn, &QPushButton::clicked,
-            this, &MainWindow::addNewProxy);
+    connect(ui->addNewProxyBtn, &QPushButton::clicked, this,
+            &MainWindow::addNewProxy);
     // proxy cmd
     this->proxyCmd.reset(new ProxyCmd);
-    connect(this->proxyCmd.get(), &ProxyCmd::cmdStdout,
-            this, &MainWindow::proxyCmdStdout);
-    connect(this->proxyCmd.get(), &ProxyCmd::cmdStderr,
-            this, &MainWindow::proxyCmdStderr);
-    connect(this->proxyCmd.get(), &ProxyCmd::started,
-            this, &MainWindow::proxyCmdStart);
-    connect(this->proxyCmd.get(), &ProxyCmd::finished,
-            this, &MainWindow::proxyCmdFinished);
-    connect(this->proxyCmd.get(), &ProxyCmd::cmdNetworkSpeed,
-            this, &MainWindow::proxyCmdNetworkTraffic);
-    connect(this->proxyCmd.get(), &ProxyCmd::ipInfoUpdate,
-            this, &MainWindow::receiveMyIpInfo);
-
+    connect(this->proxyCmd.get(), &ProxyCmd::cmdStdout, this,
+            &MainWindow::proxyCmdStdout);
+    connect(this->proxyCmd.get(), &ProxyCmd::cmdStderr, this,
+            &MainWindow::proxyCmdStderr);
+    connect(this->proxyCmd.get(), &ProxyCmd::started, this,
+            &MainWindow::proxyCmdStart);
+    connect(this->proxyCmd.get(), &ProxyCmd::finished, this,
+            &MainWindow::proxyCmdFinished);
+    connect(this->proxyCmd.get(), &ProxyCmd::cmdNetworkSpeed, this,
+            &MainWindow::proxyCmdNetworkTraffic);
+    connect(this->proxyCmd.get(), &ProxyCmd::ipInfoUpdate, this,
+            &MainWindow::receiveMyIpInfo);
 
     // proxy editor
     newProxyWidget.reset(new NewProxyWidget());
-    connect(newProxyWidget.get(), &NewProxyWidget::saved,
-            this, &MainWindow::proxyEdited);
-
+    connect(newProxyWidget.get(), &NewProxyWidget::saved, this,
+            &MainWindow::proxyEdited);
 
     // provider editor
     providerEditor.reset(new ProviderEditorWidget());
-    connect(ui->addProviderBtn, &QPushButton::clicked,
-            this, &MainWindow::newProviderEditor);
+    connect(ui->addProviderBtn, &QPushButton::clicked, this,
+            &MainWindow::newProviderEditor);
     connect(providerEditor.get(), &ProviderEditorWidget::providerEditFinish,
             this, &MainWindow::checkProvider);
 
     // settings
     settingsWidget.reset(new SettingsWidget());
-    connect(ui->settingButton, &QPushButton::clicked,
-            this, &MainWindow::openSettingsEditor);
+    connect(ui->settingButton, &QPushButton::clicked, this,
+            &MainWindow::openSettingsEditor);
 
     // clear log
-    connect(ui->clearLogBtn, &QPushButton::clicked,
-            this, &MainWindow::clearConnectLog);
+    connect(ui->clearLogBtn, &QPushButton::clicked, this,
+            &MainWindow::clearConnectLog);
 
     loadProxy();
 }
 
-MainWindow::~MainWindow() {
-    delete ui;
-}
+MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::loadProxy() {
     auto providerDataList = Config::getProviders();
-    for (auto &p: providerDataList) {
+    for (auto &p : providerDataList) {
         addProvider(p);
     }
 
@@ -112,29 +109,30 @@ void MainWindow::loadProxy() {
 void MainWindow::addProvider(const ProviderData &p) {
     auto provider = new Provider(p);
     this->providerList.append(provider);
-    connect(provider,
-            &Provider::proxyList,
-            this,
+    connect(provider, &Provider::proxyList, this,
             &MainWindow::receivedProviderProxyList);
-    connect(provider,
-            &Provider::proxyListError,
-            this,
+    connect(provider, &Provider::proxyListError, this,
             &MainWindow::receiveProxyListError);
 
     provider->fetchProxyList();
 }
 
-void MainWindow::receivedProviderProxyList(const QString &providerUuid, const QList<Proxy> &list) {
+void MainWindow::receivedProviderProxyList(const QString &providerUuid,
+                                           const QList<Proxy> &list) {
     QString providerName;
     if (providerUuid == tr("Default")) {
         providerName = tr("Default");
     } else {
-        auto providerIt = std::find_if(this->providerList.begin(), this->providerList.end(), [providerUuid](auto i) {
-            auto data = i->getProviderData();
-            return data.uuid == providerUuid;
-        });
+        auto providerIt =
+            std::find_if(this->providerList.begin(), this->providerList.end(),
+                         [providerUuid](auto i) {
+                             auto data = i->getProviderData();
+                             return data.uuid == providerUuid;
+                         });
         if (providerIt == this->providerList.end()) {
-            qCritical() << "received proxy list from unknown provider whose uuid is " << providerUuid;
+            qCritical()
+                << "received proxy list from unknown provider whose uuid is "
+                << providerUuid;
             return;
         }
         providerName = (*providerIt)->getProviderData().name;
@@ -143,9 +141,12 @@ void MainWindow::receivedProviderProxyList(const QString &providerUuid, const QL
     qDebug() << "update proxy: provider: " << providerName
              << ", proxy count: " << list.size();
 
-    log(QString("provider '%1' update: proxy count: %2").arg(providerName).arg(list.size()));
+    log(QString("provider '%1' update: proxy count: %2")
+            .arg(providerName)
+            .arg(list.size()));
 
-    auto rootItems = ui->proxyList->findItems(providerName, Qt::MatchFlag::MatchExactly);
+    auto rootItems =
+        ui->proxyList->findItems(providerName, Qt::MatchFlag::MatchExactly);
     QTreeWidgetItem *rootItem;
     if (!rootItems.empty()) {
         rootItem = rootItems.value(0);
@@ -167,9 +168,9 @@ void MainWindow::receivedProviderProxyList(const QString &providerUuid, const QL
     }
 
     QTreeWidgetItem *matchedItem = nullptr;
-    for (auto proxy: list) {
+    for (auto proxy : list) {
         auto item = new QTreeWidgetItem();
-        item->setText(0, proxy.name);
+        item->setText(0, proxy.info());
         item->setData(0, ROLE_PROXY_DATA, QVariant::fromValue(proxy));
         rootItem->addChild(item);
         if (proxy.name == lastUsedProxy.name) {
@@ -190,7 +191,8 @@ void MainWindow::receivedProviderProxyList(const QString &providerUuid, const QL
     rootItem->setExpanded(true);
 }
 
-void MainWindow::receiveProxyListError(QString providerUuid, const QString &msg) {
+void MainWindow::receiveProxyListError(QString providerUuid,
+                                       const QString &msg) {
     log(msg, LOG::ERROR);
 }
 
@@ -200,9 +202,9 @@ void MainWindow::newProviderEditor() {
 }
 
 void MainWindow::checkProvider(const ProviderData &data) {
-    auto providerIt = std::find_if(this->providerList.begin(), this->providerList.end(), [data](auto i) {
-        return i->getProviderData().uuid == data.uuid;
-    });
+    auto providerIt = std::find_if(
+        this->providerList.begin(), this->providerList.end(),
+        [data](auto i) { return i->getProviderData().uuid == data.uuid; });
     if (providerIt == this->providerList.end()) {
         // new
         addProvider(data);
@@ -212,9 +214,10 @@ void MainWindow::checkProvider(const ProviderData &data) {
     auto oldData = (*providerIt)->getProviderData();
     (*providerIt)->setProviderData(data);
 
-    auto rootItems = ui->proxyList->findItems(oldData.name, Qt::MatchFlag::MatchExactly);
+    auto rootItems =
+        ui->proxyList->findItems(oldData.name, Qt::MatchFlag::MatchExactly);
     QTreeWidgetItem *rootItem = nullptr;
-    for (auto item: rootItems) {
+    for (auto item : rootItems) {
         auto uuid = item->data(0, ROLE_PROVIDER_UUID).toString();
         if (uuid == data.uuid) {
             rootItem = item;
@@ -228,7 +231,8 @@ void MainWindow::checkProvider(const ProviderData &data) {
 
     if (oldData.name != data.name) {
         rootItem->setText(0, data.name);
-        log(QString("provider name change: %1 -> %2").arg(oldData.name, data.name));
+        log(QString("provider name change: %1 -> %2")
+                .arg(oldData.name, data.name));
     }
     if (oldData.url != data.url) {
         (*providerIt)->fetchProxyList(true);
@@ -236,9 +240,7 @@ void MainWindow::checkProvider(const ProviderData &data) {
     }
 }
 
-void MainWindow::openSettingsEditor() {
-    settingsWidget->show();
-}
+void MainWindow::openSettingsEditor() { settingsWidget->show(); }
 
 void MainWindow::addNewProxy() {
     if (newProxyWidget.isNull()) {
@@ -270,18 +272,18 @@ void MainWindow::openProxyMenu(const QPoint &pos) {
         }
         auto actionEdit = new QAction(tr("edit"), this);
         actionEdit->setData(pos);
-        connect(actionEdit, &QAction::triggered,
-                this, &MainWindow::menuOpenProviderEditor);
+        connect(actionEdit, &QAction::triggered, this,
+                &MainWindow::menuOpenProviderEditor);
 
         auto actionUpdate = new QAction(tr("update"), this);
         actionEdit->setData(pos);
-        connect(actionUpdate, &QAction::triggered,
-                this, &MainWindow::menuUpdateProxyList);
+        connect(actionUpdate, &QAction::triggered, this,
+                &MainWindow::menuUpdateProxyList);
 
         auto actionDelete = new QAction(tr("delete"), this);
         actionDelete->setData(pos);
-        connect(actionDelete, &QAction::triggered,
-                this, &MainWindow::menuDeleteProvider);
+        connect(actionDelete, &QAction::triggered, this,
+                &MainWindow::menuDeleteProvider);
 
         QMenu menu(ui->proxyList);
         menu.addAction(actionEdit);
@@ -298,8 +300,7 @@ void MainWindow::openProxyMenu(const QPoint &pos) {
     if (parentItem->text(0) == tr("Default")) {
         auto actionEdit = new QAction(tr("edit"), this);
         actionEdit->setData(pos);
-        connect(actionEdit, &QAction::triggered,
-                this, &MainWindow::menuEdit);
+        connect(actionEdit, &QAction::triggered, this, &MainWindow::menuEdit);
 
         QMenu menu(ui->proxyList);
         menu.addAction(actionEdit);
@@ -308,8 +309,7 @@ void MainWindow::openProxyMenu(const QPoint &pos) {
     }
     auto actionConnect = new QAction(tr("connect"), this);
     actionConnect->setData(pos);
-    connect(actionConnect, &QAction::triggered,
-            this, &MainWindow::menuConnect);
+    connect(actionConnect, &QAction::triggered, this, &MainWindow::menuConnect);
 
     QMenu menu(ui->proxyList);
     menu.addAction(actionConnect);
@@ -352,9 +352,11 @@ void MainWindow::menuOpenProviderEditor() {
     auto pos = action->data().toPoint();
     auto item = ui->proxyList->itemAt(pos);
     auto providerUUid = item->data(0, ROLE_PROVIDER_UUID).toString();
-    auto providerIt = std::find_if(this->providerList.begin(), this->providerList.end(), [providerUUid](auto i) {
-        return i->getProviderData().uuid == providerUUid;
-    });
+    auto providerIt =
+        std::find_if(this->providerList.begin(), this->providerList.end(),
+                     [providerUUid](auto i) {
+                         return i->getProviderData().uuid == providerUUid;
+                     });
     if (providerIt != this->providerList.end()) {
         this->providerEditor->setProvider((*providerIt)->getProviderData());
         providerEditor->show();
@@ -366,9 +368,11 @@ void MainWindow::menuUpdateProxyList() {
     auto pos = action->data().toPoint();
     auto item = ui->proxyList->itemAt(pos);
     auto providerUUid = item->data(0, ROLE_PROVIDER_UUID).toString();
-    auto providerIt = std::find_if(this->providerList.begin(), this->providerList.end(), [providerUUid](auto i) {
-        return i->getProviderData().uuid == providerUUid;
-    });
+    auto providerIt =
+        std::find_if(this->providerList.begin(), this->providerList.end(),
+                     [providerUUid](auto i) {
+                         return i->getProviderData().uuid == providerUUid;
+                     });
     if (providerIt != this->providerList.end()) {
         (*providerIt)->fetchProxyList(true);
     }
@@ -379,12 +383,16 @@ void MainWindow::menuDeleteProvider() {
     auto pos = action->data().toPoint();
     auto rootItem = ui->proxyList->itemAt(pos);
     auto providerUUid = rootItem->data(0, ROLE_PROVIDER_UUID).toString();
-    auto providerIt = std::find_if(this->providerList.begin(), this->providerList.end(), [providerUUid](auto i) {
-        return i->getProviderData().uuid == providerUUid;
-    });
+    auto providerIt =
+        std::find_if(this->providerList.begin(), this->providerList.end(),
+                     [providerUUid](auto i) {
+                         return i->getProviderData().uuid == providerUUid;
+                     });
     if (providerIt != this->providerList.end()) {
         auto data = (*providerIt)->getProviderData();
-        auto choose = QMessageBox::warning(this, "Delete provider", "Do your want to delete " + data.name + "?");
+        auto choose =
+            QMessageBox::warning(this, "Delete provider",
+                                 "Do your want to delete " + data.name + "?");
         if (choose == QMessageBox::StandardButton::Ok) {
             Config::deleteProvider(data.uuid);
             qInfo() << "provider " + data.name + " has been deleted";
@@ -404,7 +412,7 @@ void MainWindow::doConnect(QTreeWidgetItem *item) {
     ui->logView->appendPlainText("connecting to: " + proxy.info());
 
     Proxy lastRelay;
-    for (auto &p: this->proxies) {
+    for (auto &p : this->proxies) {
         if (p.lastRelay) {
             lastRelay = p;
             break;
@@ -420,11 +428,8 @@ void MainWindow::doConnect(QTreeWidgetItem *item) {
 }
 
 void MainWindow::proxyCmdStart() {
-    QString msg = "<span style=\"color:green;white-space:pre\">"
-                  +
-                  QString("proxy cmd is running")
-                  +
-                  "</span>";
+    QString msg = "<span style=\"color:green;white-space:pre\">" +
+                  QString("proxy cmd is running") + "</span>";
     log(msg);
     // remove last connected icon
     auto topLevelItemCount = ui->proxyList->topLevelItemCount();
@@ -444,19 +449,16 @@ void MainWindow::proxyCmdStart() {
     }
 }
 
-void MainWindow::proxyCmdFinished(int exitCode, QProcess::ExitStatus exitStatus) {
+void MainWindow::proxyCmdFinished(int exitCode,
+                                  QProcess::ExitStatus exitStatus) {
     if (exitStatus == QProcess::ExitStatus::CrashExit) {
-        QString msg = "<span style=\"color:red;white-space:pre\">"
-                      +
-                      QString("proxy cmd exited: exit code: %1").arg(exitCode)
-                      +
+        QString msg = "<span style=\"color:red;white-space:pre\">" +
+                      QString("proxy cmd exited: exit code: %1").arg(exitCode) +
                       "</span>";
         proxyCmdStderr(msg);
     } else {
-        QString msg = "<span style=\"color:red;white-space:pre\">"
-                      +
-                      QString("proxy cmd exited: exit code: %1").arg(exitCode)
-                      +
+        QString msg = "<span style=\"color:red;white-space:pre\">" +
+                      QString("proxy cmd exited: exit code: %1").arg(exitCode) +
                       "</span>";
         proxyCmdStderr(msg);
     }
@@ -496,12 +498,13 @@ void MainWindow::proxyCmdNetworkTraffic(qint64 up, qint64 down) {
     traffic.lastTime = now;
 
     auto upSpeed = QString("%1 ↑").arg(Readable::bytes(traffic.uplinkRatio));
-    auto downSpeed = QString("%2 ↓").arg(Readable::bytes(traffic.downlinkRatio));
+    auto downSpeed =
+        QString("%2 ↓").arg(Readable::bytes(traffic.downlinkRatio));
     if (this->ipInfo.ip.isEmpty()) {
         ui->statusbar->showMessage(upSpeed + " " + downSpeed);
     } else {
-        ui->statusbar->showMessage(
-                this->ipInfo.city + ", " + this->ipInfo.ip + "         " + upSpeed + " " + downSpeed);
+        ui->statusbar->showMessage(this->ipInfo.city + ", " + this->ipInfo.ip +
+                                   "         " + upSpeed + " " + downSpeed);
     }
 }
 
@@ -512,15 +515,15 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 
 void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason) {
     switch (reason) {
-        case QSystemTrayIcon::Trigger:
-            this->show();
-        case QSystemTrayIcon::DoubleClick:
-            this->show();
-            break;
-        case QSystemTrayIcon::MiddleClick:
-            this->show();
-            break;
-        default:;
+    case QSystemTrayIcon::Trigger:
+        this->show();
+    case QSystemTrayIcon::DoubleClick:
+        this->show();
+        break;
+    case QSystemTrayIcon::MiddleClick:
+        this->show();
+        break;
+    default:;
     }
 }
 
@@ -542,17 +545,12 @@ void MainWindow::receiveMyIpInfo(const IpInfo &info, const QString &msg) {
     }
 }
 
-void MainWindow::clearConnectLog() {
-    ui->logView->clear();
-}
+void MainWindow::clearConnectLog() { ui->logView->clear(); }
 
 void MainWindow::log(const QString &msg, LOG level) {
     if (level == LOG::ERROR) {
-        QString m = "<span style=\"color:red;white-space:pre\">"
-                    +
-                    msg
-                    +
-                    "</span>";
+        QString m =
+            "<span style=\"color:red;white-space:pre\">" + msg + "</span>";
         proxyCmdStderr(msg);
         ui->logView->appendHtml(m);
     } else {

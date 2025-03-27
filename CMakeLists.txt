@@ -7,10 +7,11 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 enable_testing()
+set(CMAKE_EXPORT_COMPILE_COMMANDS on)
 
 ADD_SUBDIRECTORY(Tests)
 
-find_package(protobuf CONFIG REQUIRED)
+find_package(Protobuf CONFIG REQUIRED)
 find_package(gRPC CONFIG REQUIRED)
 
 get_target_property(grpc_cpp_plugin_location gRPC::grpc_cpp_plugin LOCATION)
