@@ -30,7 +30,7 @@ protobuf_generate(TARGET v2ray_stats LANGUAGE grpc
         GENERATE_EXTENSIONS .grpc.pb.h .grpc.pb.cc
         PLUGIN "protoc-gen-grpc=${grpc_cpp_plugin_location}")
 
-find_package(Qt5 COMPONENTS
+find_package(Qt6 COMPONENTS
         Core
         Gui
         Widgets
@@ -73,10 +73,10 @@ add_executable(
         proxy/v2ray_stats_grpc.pb.cc)
 
 target_link_libraries(bridge
-        Qt5::Core
-        Qt5::Gui
-        Qt5::Widgets
-        Qt5::Network
+        Qt6::Core
+        Qt6::Gui
+        Qt6::Widgets
+        Qt6::Network
         protobuf::libprotobuf
         gRPC::grpc
         gRPC::grpc++

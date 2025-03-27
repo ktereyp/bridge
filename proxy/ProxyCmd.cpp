@@ -228,14 +228,14 @@ void ProxyCmd::readStdout() {
             msgItem =
                 msgItem.left(pos) +
                 QString("<span style=\"color:brown;white-space:pre\">%1</span>")
-                    .arg(msgItem.midRef(pos));
+                    .arg(msgItem.mid(pos));
             emit cmdStdout(msgItem);
             continue;
         } else if ((pos = msgItem.indexOf("[Error]")) > 0) {
             msgItem =
                 msgItem.left(pos) +
                 QString("<span style=\"color:red;white-space:pre\">%1</span>")
-                    .arg(msgItem.midRef(pos));
+                    .arg(msgItem.mid(pos));
             emit cmdStdout(msgItem);
             continue;
         }
