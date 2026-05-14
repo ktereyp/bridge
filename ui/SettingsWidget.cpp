@@ -1,5 +1,6 @@
 #include "SettingsWidget.h"
 #include "ui_SettingsWidget.h"
+#include "../utils/AutoStart.h"
 #include "../utils/Config.h"
 #include <QFileDialog>
 #include <QProcess>
@@ -24,6 +25,7 @@ SettingsWidget::SettingsWidget(QWidget *parent) :
     for (const auto &domain: clashConfig.bypassDomains) {
         ui->bypassDomainInput->appendPlainText(domain);
     }
+    ui->autoStartInput->setChecked(AutoStart::isEnabled());
 
     connect(ui->choseFileBtn, &QPushButton::clicked,
             this, &SettingsWidget::chooseFile);
@@ -109,6 +111,8 @@ void SettingsWidget::saveConfig() {
     clashConfig.logLevel = ui->logLevelInput->currentText();
     clashConfig.bypassDomains = ui->bypassDomainInput->toPlainText().split("\n");
     Config::setClashConfig(clashConfig);
+
+    AutoStart::setEnabled(ui->autoStartInput->isChecked());
 
     close();
 }

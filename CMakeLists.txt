@@ -61,6 +61,8 @@ add_executable(
         ui/NewProxyWidget.ui
         utils/Readable.cpp
         utils/Readable.h
+        utils/AutoStart.cpp
+        utils/AutoStart.h
         ui/SettingsWidget.cpp
         ui/SettingsWidget.h
         ui/SettingsWidget.ui
