@@ -294,7 +294,7 @@ void ProxyCmd::doQuerySpeed() {
                     QTimer::singleShot(1000, this, &ProxyCmd::doQuerySpeed);
                     break;
                 }
-                sleep(1);
+                QThread::sleep(1);
             }
         })->start();
     }

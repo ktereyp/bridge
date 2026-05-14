@@ -6,10 +6,6 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-enable_testing()
-set(CMAKE_EXPORT_COMPILE_COMMANDS on)
-
-ADD_SUBDIRECTORY(Tests)
 
 find_package(Protobuf CONFIG REQUIRED)
 find_package(gRPC CONFIG REQUIRED)
@@ -37,10 +33,11 @@ find_package(Qt6 COMPONENTS
         Network
         REQUIRED)
 
-add_compile_definitions(CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE})
+add_compile_definitions(CMAKE_BUILD_TYPE=$<CONFIG>)
 
 add_executable(
         bridge
+        WIN32
         bridge.qrc
         main.cpp
         ui/MainWindow.cpp
