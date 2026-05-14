@@ -18,6 +18,8 @@ const QString Config::KEY_PROXY_CMD_ALLOW_LAN = "clash-allow-lan";
 const QString Config::KEY_PROXY_CMD_BIND_ADDRESS = "clash-bind-address";
 const QString Config::KEY_PROXY_CMD_LOG_LEVEL = "clash-log-level";
 const QString Config::KEY_PROXY_CMD_BYPASS_DOMAIN = "clash-bypass-domain";
+const QString Config::KEY_LAST_CONNECTED_PROVIDER = "last-connected-provider";
+const QString Config::KEY_LAST_CONNECTED_PROXY_NAME = "last-connected-proxy-name";
 
 QString Config::preferConfigDir = "";
 

@@ -97,12 +97,13 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::loadProxy() {
+    this->proxies = Config::getProxies();
+
     auto providerDataList = Config::getProviders();
     for (auto &p : providerDataList) {
         addProvider(p);
     }
 
-    this->proxies = Config::getProxies();
     receivedProviderProxyList(tr("Default"), this->proxies);
 }
 
@@ -167,20 +168,32 @@ void MainWindow::receivedProviderProxyList(const QString &providerUuid,
         rootItem->removeChild(item);
     }
 
+    QString targetName = lastUsedProxy.name;
+    bool restoreFromConfig = false;
+    if (targetName.isEmpty()) {
+        auto savedProvider = Config::get(Config::KEY_LAST_CONNECTED_PROVIDER);
+        auto savedProxyName =
+            Config::get(Config::KEY_LAST_CONNECTED_PROXY_NAME);
+        if (!savedProxyName.isEmpty() && savedProvider == providerUuid) {
+            targetName = savedProxyName;
+            restoreFromConfig = true;
+        }
+    }
+
     QTreeWidgetItem *matchedItem = nullptr;
     for (auto proxy : list) {
         auto item = new QTreeWidgetItem();
         item->setText(0, proxy.info());
         item->setData(0, ROLE_PROXY_DATA, QVariant::fromValue(proxy));
         rootItem->addChild(item);
-        if (proxy.name == lastUsedProxy.name) {
+        if (!targetName.isEmpty() && proxy.name == targetName) {
             matchedItem = item;
         }
     }
     if (matchedItem) {
         auto matchedProxy = matchedItem->data(0, Qt::UserRole).value<Proxy>();
-        // FIXME
-        if (lastUsedProxy.toV2rayProxy("") == matchedProxy.toV2rayProxy("")) {
+        if (!restoreFromConfig &&
+            lastUsedProxy.toV2rayProxy("") == matchedProxy.toV2rayProxy("")) {
             matchedItem->setIcon(0, QIcon(":/assets/green_check.jpg"));
             matchedItem->setData(0, ROLE_CONNECTED, true);
             matchedItem->setData(0, ROLE_CONNECTING, false);
@@ -444,6 +457,13 @@ void MainWindow::proxyCmdStart() {
                 proxyItem->setIcon(0, QIcon(":/assets/green_check.jpg"));
                 proxyItem->setData(0, ROLE_CONNECTED, true);
                 proxyItem->setData(0, ROLE_CONNECTING, false);
+
+                auto providerUuid =
+                    item->data(0, ROLE_PROVIDER_UUID).toString();
+                auto proxy =
+                    proxyItem->data(0, ROLE_PROXY_DATA).value<Proxy>();
+                Config::set(Config::KEY_LAST_CONNECTED_PROVIDER, providerUuid);
+                Config::set(Config::KEY_LAST_CONNECTED_PROXY_NAME, proxy.name);
             }
         }
     }

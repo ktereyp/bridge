@@ -39,6 +39,8 @@ public:
     static const QString KEY_PROXY_CMD_BIND_ADDRESS;
     static const QString KEY_PROXY_CMD_LOG_LEVEL;
     static const QString KEY_PROXY_CMD_BYPASS_DOMAIN;
+    static const QString KEY_LAST_CONNECTED_PROVIDER;
+    static const QString KEY_LAST_CONNECTED_PROXY_NAME;
 
 
 public:
