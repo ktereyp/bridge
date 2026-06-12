@@ -43,6 +43,9 @@ void NewProxyWidget::proxyTypeChanged(int index) {
     } else if (current == "Vmess") {
         ui->stackedWidget->setCurrentWidget(ui->pageVmess);
         this->proxyType = ProxyType::Vmess;
+    } else if (current == "Vless") {
+        ui->stackedWidget->setCurrentWidget(ui->pageVless);
+        this->proxyType = ProxyType::Vless;
     } else if (current == "Snell") {
         ui->stackedWidget->setCurrentWidget(ui->pageSnell);
         this->proxyType = ProxyType::Snell;
@@ -153,6 +156,19 @@ void NewProxyWidget::save() {
                 }
             }
         }
+    } else if (this->proxyType == ProxyType::Vless) {
+        p.vlessData.server = ui->vlessServerInput->text();
+        p.vlessData.port = ui->vlessPortInput->text();
+        p.vlessData.password = ui->vlessIdInput->text();
+        p.vlessData.flow = ui->vlessFlowInput->currentText();
+        p.vlessData.encryption = ui->vlessEncryptionInput->currentText();
+        p.vlessData.network = ui->vlessNetworkInput->currentText();
+        p.vlessData.security = ui->vlessSecurityInput->currentText();
+        p.vlessData.realityFingerprint = ui->vlessFingerprintInput->currentText();
+        p.vlessData.realityServerName = ui->vlessServerNameInput->text();
+        p.vlessData.realityPublicKey = ui->vlessPublicKeyInput->text();
+        p.vlessData.realityShortId = ui->vlessShortIdInput->text();
+        p.vlessData.realitySpiderX = ui->vlessSpiderXInput->text();
     }
     auto msg = p.verifyComplete();
     if (!msg.isEmpty()) {
@@ -238,6 +254,27 @@ void NewProxyWidget::setProxy(Proxy p) {
             }
             ui->shadowSocksV2rayPluginHeadersInput->setText(headers.join(","));
         }
+    } else if (p.proxyType == ProxyType::Vless) {
+        ui->stackedWidget->setCurrentWidget(ui->pageVless);
+        ui->proxyTypeInput->setCurrentText("Vless");
+        this->trojanNetworkType = "";
+        this->shadowSocksPlugin = "";
+
+        ui->vlessServerInput->setText(p.vlessData.server);
+        ui->vlessPortInput->setText(p.vlessData.port);
+        ui->vlessIdInput->setText(p.vlessData.password);
+        ui->vlessFlowInput->setCurrentText(p.vlessData.flow);
+        ui->vlessEncryptionInput->setCurrentText(
+            p.vlessData.encryption.isEmpty() ? "none" : p.vlessData.encryption);
+        ui->vlessNetworkInput->setCurrentText(
+            p.vlessData.network.isEmpty() ? "tcp" : p.vlessData.network);
+        ui->vlessSecurityInput->setCurrentText(
+            p.vlessData.security.isEmpty() ? "reality" : p.vlessData.security);
+        ui->vlessFingerprintInput->setCurrentText(p.vlessData.realityFingerprint);
+        ui->vlessServerNameInput->setText(p.vlessData.realityServerName);
+        ui->vlessPublicKeyInput->setText(p.vlessData.realityPublicKey);
+        ui->vlessShortIdInput->setText(p.vlessData.realityShortId);
+        ui->vlessSpiderXInput->setText(p.vlessData.realitySpiderX);
     }
 }
 

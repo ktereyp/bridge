@@ -56,11 +56,11 @@ Proxy Proxy::vless(QString input) {
     p.vlessData.encryption = urlQuery.queryItemValue("encryption");
     p.vlessData.realityPublicKey = urlQuery.queryItemValue("pbk");
     p.vlessData.realityFingerprint = urlQuery.queryItemValue("fp");
-    p.vlessData.realityFingerprint = urlQuery.queryItemValue("fp");
     p.vlessData.network = urlQuery.queryItemValue("type");
     p.vlessData.flow = urlQuery.queryItemValue("flow");
     p.vlessData.realityServerName = urlQuery.queryItemValue("sni");
-    p.vlessData.realityServerName = urlQuery.queryItemValue("sni");
+    p.vlessData.realityShortId = urlQuery.queryItemValue("sid");
+    p.vlessData.realitySpiderX = urlQuery.queryItemValue("spx");
     return p;
 }
 
@@ -88,6 +88,19 @@ QString Proxy::verifyComplete() const {
         if (shadowSocksData.cipher.isEmpty()) {
             return "cipher cannot be empty";
         }
+    } else if (this->proxyType == ProxyType::Vless) {
+        if (vlessData.server.isEmpty()) {
+            return "server cannot be empty";
+        }
+        if (vlessData.port.isEmpty()) {
+            return "port cannot be empty";
+        }
+        if (vlessData.password.isEmpty()) {
+            return "id cannot be empty";
+        }
+        if (vlessData.security == "reality" && vlessData.realityPublicKey.isEmpty()) {
+            return "reality public key cannot be empty";
+        }
     }
     return {};
 }
@@ -100,6 +113,7 @@ QByteArray Proxy::toJson() {
     json["lastRelay"] = this->lastRelay;
     json["shadowSocksData"] = shadowSocksData.toJson();
     json["trojanData"] = trojanData.toJson();
+    json["vlessData"] = vlessData.toJson();
     return QJsonDocument(json).toJson();
 }
 
@@ -113,6 +127,7 @@ Proxy Proxy::from(const QByteArray &data) {
     p.shadowSocksData =
         ProxyShadowSocks::from(json["shadowSocksData"].toObject());
     p.trojanData = ProxyTrojan::from(json["trojanData"].toObject());
+    p.vlessData = ProxyVless::from(json["vlessData"].toObject());
     return p;
 }
 
@@ -270,6 +285,27 @@ QJsonObject Proxy::toV2rayProxy(const QString &tag) {
         });
     }
     if (proxyType == ProxyType::Vless) {
+        QString network = vlessData.network.isEmpty() ? "tcp" : vlessData.network;
+        QString security = vlessData.security.isEmpty() ? "none" : vlessData.security;
+        QJsonObject streamSettings = QJsonObject::fromVariantMap({
+            {"network", network},
+            {"security", security},
+        });
+        if (security == "reality") {
+            streamSettings["realitySettings"] = QJsonObject::fromVariantMap({
+                {"show", false},
+                {"fingerprint", vlessData.realityFingerprint},
+                {"serverName", vlessData.realityServerName},
+                {"publicKey", vlessData.realityPublicKey},
+                {"shortId", vlessData.realityShortId},
+                {"spiderX", vlessData.realitySpiderX},
+            });
+        } else if (security == "tls") {
+            streamSettings["tlsSettings"] = QJsonObject::fromVariantMap({
+                {"serverName", vlessData.realityServerName},
+                {"fingerprint", vlessData.realityFingerprint},
+            });
+        }
         return QJsonObject::fromVariantMap(
             {{"tag", tag},
              {"protocol", "vless"},
@@ -282,20 +318,10 @@ QJsonObject Proxy::toV2rayProxy(const QString &tag) {
                         {"users", QJsonArray::fromVariantList(
                                       {QJsonObject::fromVariantMap(
                                           {{"id", vlessData.password},
-                                           {"encryption", vlessData.encryption},
+                                           {"encryption", vlessData.encryption.isEmpty() ? "none" : vlessData.encryption},
                                            {"flow", vlessData.flow}})})}})})},
               })},
-             {"streamSettings",
-              QJsonObject::fromVariantMap({
-                  {"network", "tcp"},
-                  {"security", "reality"},
-                  {"realitySettings",
-                   QJsonObject::fromVariantMap({
-                       {"fingerprint", vlessData.realityFingerprint},
-                       {"serverName", vlessData.realityServerName},
-                       {"publicKey", vlessData.realityPublicKey},
-                   })},
-              })}});
+             {"streamSettings", streamSettings}});
     }
     if (proxyType == ProxyType::Trojan) {
         return QJsonObject::fromVariantMap(

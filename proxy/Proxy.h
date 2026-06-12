@@ -152,6 +152,8 @@ public:
     QString realityFingerprint;
     QString realityServerName;
     QString realityPublicKey;
+    QString realityShortId;
+    QString realitySpiderX;
 
     QJsonObject toJson() {
         QJsonObject json;
@@ -165,6 +167,8 @@ public:
         json["realityFingerprint"] = this->realityFingerprint;
         json["realityServerName"] = this->realityServerName;
         json["realityPublicKey"] = this->realityPublicKey;
+        json["realityShortId"] = this->realityShortId;
+        json["realitySpiderX"] = this->realitySpiderX;
         return json;
     }
 
@@ -180,6 +184,8 @@ public:
         p.realityFingerprint = json["realityFingerprint"].toString();
         p.realityServerName = json["realityServerName"].toString();
         p.realityPublicKey = json["realityPublicKey"].toString();
+        p.realityShortId = json["realityShortId"].toString();
+        p.realitySpiderX = json["realitySpiderX"].toString();
         return p;
     }
 };
