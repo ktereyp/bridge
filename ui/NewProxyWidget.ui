@@ -82,6 +82,11 @@
        </item>
        <item>
         <property name="text">
+         <string>Vless</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>Socks5</string>
         </property>
        </item>
@@ -686,6 +691,234 @@
       <layout class="QHBoxLayout" name="horizontalLayout_11">
        <item>
         <layout class="QFormLayout" name="formLayout_9"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="pageVless">
+      <layout class="QHBoxLayout" name="horizontalLayout_20">
+       <item>
+        <layout class="QFormLayout" name="formLayout_20">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_40">
+           <property name="text">
+            <string>server</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="vlessServerInput"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_41">
+           <property name="text">
+            <string>port</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="vlessPortInput"/>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_42">
+           <property name="text">
+            <string>id</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="vlessIdInput"/>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_43">
+           <property name="text">
+            <string>flow</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QComboBox" name="vlessFlowInput">
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+           <item>
+            <property name="text">
+             <string/>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>xtls-rprx-vision</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="label_44">
+           <property name="text">
+            <string>encryption</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QComboBox" name="vlessEncryptionInput">
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+           <item>
+            <property name="text">
+             <string>none</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="label_45">
+           <property name="text">
+            <string>network</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QComboBox" name="vlessNetworkInput">
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+           <item>
+            <property name="text">
+             <string>tcp</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>ws</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>grpc</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>h2</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="6" column="0">
+          <widget class="QLabel" name="label_46">
+           <property name="text">
+            <string>security</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="1">
+          <widget class="QComboBox" name="vlessSecurityInput">
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+           <item>
+            <property name="text">
+             <string>reality</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>tls</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>none</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="7" column="0">
+          <widget class="QLabel" name="label_47">
+           <property name="text">
+            <string>fingerprint</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="1">
+          <widget class="QComboBox" name="vlessFingerprintInput">
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+           <item>
+            <property name="text">
+             <string>chrome</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>firefox</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>safari</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>ios</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>edge</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>random</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="8" column="0">
+          <widget class="QLabel" name="label_48">
+           <property name="text">
+            <string>server-name</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="1">
+          <widget class="QLineEdit" name="vlessServerNameInput"/>
+         </item>
+         <item row="9" column="0">
+          <widget class="QLabel" name="label_49">
+           <property name="text">
+            <string>public-key</string>
+           </property>
+          </widget>
+         </item>
+         <item row="9" column="1">
+          <widget class="QLineEdit" name="vlessPublicKeyInput"/>
+         </item>
+         <item row="10" column="0">
+          <widget class="QLabel" name="label_50">
+           <property name="text">
+            <string>short-id</string>
+           </property>
+          </widget>
+         </item>
+         <item row="10" column="1">
+          <widget class="QLineEdit" name="vlessShortIdInput"/>
+         </item>
+         <item row="11" column="0">
+          <widget class="QLabel" name="label_51">
+           <property name="text">
+            <string>spider-x</string>
+           </property>
+          </widget>
+         </item>
+         <item row="11" column="1">
+          <widget class="QLineEdit" name="vlessSpiderXInput"/>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
